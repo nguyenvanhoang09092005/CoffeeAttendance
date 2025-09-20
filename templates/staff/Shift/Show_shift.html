@@ -1,0 +1,95 @@
+{% extends 'staff/Dashboard/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Lịch làm việc</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="#">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Lịch làm việc</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2"
+            ><i class="fas fa-download"></i> Tải xuống</a
+          >
+           <a href="#" class="btn btn-primary"
+            ><i class="fas fa-tasks"></i
+          ></a>
+    
+         
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>Ca</th>
+              {% for day, date in weekdays_with_dates %}
+            <th 
+                {% if date == today %}
+                    style="background-color:#dce6f9; font-weight:bold; border:2px solid #4a90e2;"
+                {% endif %}
+            >
+                {{ day }}<br>
+                {{ date|date:"d/m/Y" }}
+            </th>
+        {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for shift, row in table.items %}
+            <tr>
+              <td><b>{{ shift.name }}</b></td>
+              {% for cell in row %}
+              <td>{% if cell %} {{ cell }} {% else %} - {% endif %}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+<style>
+  .table {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .table th,
+  .table td {
+    vertical-align: middle !important;
+    padding: 12px;
+    font-size: 14px;
+  }
+  .table th {
+    background: #343a40;
+    color: #fff;
+    font-weight: bold;
+  }
+  .table td {
+    min-width: 120px;
+  }
+  .page-title {
+    margin: 20px 0;
+  }
+</style>
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

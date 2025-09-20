@@ -1,0 +1,115 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chấm công</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Chấm công</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2">
+            <i class="fas fa-download"></i> Export
+          </a>
+          <a href="{% url 'attendance:manual' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Check-in thủ công
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- /Page Header -->
+
+    <!-- Table -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">Ảnh</th>
+                    <th class="text-center">Mã NV</th>
+                    <th class="text-center">Họ tên</th>
+                    <th class="text-center">Chức vụ</th>
+                    <th class="text-center">Đi trễ</th>
+                    <th class="text-center">Về sớm</th>
+                    <th class="text-center">Đúng giờ</th>
+                    <th class="text-center">Tổng</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for emp in data %}
+                  <tr>
+                    <td class="text-center">
+                      {% if emp.employee_image %}
+                      <img
+                        src="{{ emp.employee_image }}"
+                        alt="avatar"
+                        class="rounded-circle"
+                        width="50"
+                        height="50"
+                      />
+                      {% else %}
+                      <img
+                        src="{% static 'images/default-avatar.png' %}"
+                        alt="avatar"
+                        class="rounded-circle"
+                        width="50"
+                        height="50"
+                      />
+                      {% endif %}
+                    </td>
+                    <td class="text-center">{{ emp.employee_id }}</td>
+
+                    <td class="text-center">{{ emp.name }}</td>
+                    <td class="text-center">{{ emp.position }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-danger">{{ emp.late }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-info">{{ emp.early }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ emp.ontime }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-dark">{{ emp.total }}</span>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center">
+                      Chưa có dữ liệu chấm công
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Table -->
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+{% endblock %}

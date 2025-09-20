@@ -1,0 +1,152 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Chỉnh sửa thông tin nhân viên</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'employee_list' %}">Nhân viên</a></li>
+                        <li class="breadcrumb-item active">Sửa thông tin</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="form-title"><span>Thông tin nhân viên</span></h5>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Họ</label>
+                                        <input type="text" name="first_name" class="form-control" value="{{ employee.first_name }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Tên</label>
+                                        <input type="text" name="last_name" class="form-control" value="{{ employee.last_name }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" name="email" class="form-control" value="{{ employee.email }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Giới tính</label>
+                                        <select name="gender" class="form-control">
+                                            <option value="Male" {% if employee.gender == 'Male' %}selected{% endif %}>Nam</option>
+                                            <option value="Female" {% if employee.gender == 'Female' %}selected{% endif %}>Nữ</option>
+                                            <option value="Others" {% if employee.gender == 'Others' %}selected{% endif %}>Khác</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ngày sinh</label>
+                                        <input type="date" name="date_of_birth" class="form-control" value="{{ employee.date_of_birth|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Chức vụ</label>
+                                        <select name="position" class="form-control">
+                                            <option value="Manager" {% if employee.position == 'Manager' %}selected{% endif %}>Quản lý</option>
+                                            <option value="Cashier" {% if employee.position == 'Cashier' %}selected{% endif %}>Thu Ngân</option>
+                                            <option value="Barista" {% if employee.position == 'Barista' %}selected{% endif %}>Pha chế</option>
+                                             <option value="Waiter" {% if employee.position == 'Waiter' %}selected{% endif %}>Phụ vụ</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ngày vào làm</label>
+                                        <input type="date" name="joining_date" class="form-control" value="{{ employee.joining_date|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Số điện thoại</label>
+                                        <input type="text" name="mobile_number" class="form-control" value="{{ employee.mobile_number }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Địa chỉ</label>
+                                        <textarea name="address" class="form-control">{{ employee.address }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Hình ảnh</label>
+                                        <input type="file" name="employee_image" class="form-control">
+                                        {% if employee.employee_image %}
+                                            <small>Ảnh hiện tại: <img src="{{ employee.employee_image.url }}" width="80"></small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Số tài khoản ngân hàng</label>
+                                        <input type="text" name="bank_account_number" class="form-control" value="{{ employee.bank_account_number }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Tên ngân hàng</label>
+                                        <input type="text" name="bank_name" class="form-control" value="{{ employee.bank_name }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Trạng thái</label>
+                                        <select name="employment_status" class="form-control">
+                                            <option value="Active" {% if employee.employment_status == 'Active' %}selected{% endif %}>Đang làm việc</option>
+                                            <option value="Inactive" {% if employee.employment_status == 'Inactive' %}selected{% endif %}>Nghỉ việc</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ngày nghỉ việc</label>
+                                        <input type="date" name="resignation_date" class="form-control" value="{{ employee.resignation_date|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

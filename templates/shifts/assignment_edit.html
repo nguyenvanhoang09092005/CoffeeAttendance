@@ -1,0 +1,90 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chỉnh sửa phân công ca</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'all_manage' %}">Phân công ca</a>
+            </li>
+            <li class="breadcrumb-item active">Sửa phân công</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <!-- Form thay thế nhân viên -->
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="replace" />
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="form-title"><span>Thay thế nhân viên</span></h5>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Nhân viên mới</label>
+                    <select name="new_employee" class="form-control">
+                      {% for e in employees %}
+                      <option value="{{ e.id }}">
+                        {{ e.first_name }} {{ e.last_name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-warning">
+                    Thay thế
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <hr />
+
+            <!-- Form hoán đổi ca -->
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="swap" />
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="form-title"><span>Hoán đổi ca</span></h5>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Chọn ca để hoán đổi</label>
+                    <select name="other_assignment" class="form-control">
+                      {% for a in assignments %}
+                      <option value="{{ a.id }}">
+                        {{ a.employee.first_name }} {{ a.employee.last_name }} -
+                        {{ a.shift.name }} ({{ a.get_weekday_display }})
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-info">Hoán đổi</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="mt-3">
+              <a href="{% url 'all_manage' %}" class="btn btn-secondary"
+                >Quay lại</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

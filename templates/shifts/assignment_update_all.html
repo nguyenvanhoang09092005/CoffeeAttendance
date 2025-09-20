@@ -1,0 +1,93 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Cập nhật toàn bộ phân công ca</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'all_manage' %}">Phân công ca</a>
+            </li>
+            <li class="breadcrumb-item active">Cập nhật toàn bộ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <p class="text-danger">
+                ⚠ Thao tác này sẽ xóa toàn bộ phân công tuần hiện tại và lập lại
+                mới!
+              </p>
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Nhân viên</th>
+                    <th>Ca</th>
+                    <th>Thứ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for i in "12345678910"|make_list %}
+                  <tr>
+                    <td>
+                      <select
+                        name="employee_{{ forloop.counter }}"
+                        class="form-control"
+                      >
+                        <option value="">-- Chọn --</option>
+                        {% for e in employees %}
+                        <option value="{{ e.id }}">
+                          {{ e.first_name }} {{ e.last_name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        name="shift_{{ forloop.counter }}"
+                        class="form-control"
+                      >
+                        <option value="">-- Chọn --</option>
+                        {% for s in shifts %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        name="weekday_{{ forloop.counter }}"
+                        class="form-control"
+                      >
+                        {% for key, value in weekdays %}
+                        <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                      </select>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <div class="col-12">
+                <button type="submit" class="btn btn-danger">
+                  Xóa & Lập lại
+                </button>
+                <a href="{% url 'all_manage' %}" class="btn btn-secondary"
+                  >Hủy</a
+                >
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

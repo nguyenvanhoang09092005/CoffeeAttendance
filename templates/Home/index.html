@@ -1,0 +1,220 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+
+<div class="page-wrapper">
+   <div class="content container-fluid">
+      <div class="page-header">
+         <div class="row">
+            <div class="col-sm-12">
+               <h3 class="page-title">Chào mừng Quản trị viên!</h3>
+               <ul class="breadcrumb">
+                  <li class="breadcrumb-item active">Bảng điều khiển</li>
+               </ul>
+            </div>
+         </div>
+      </div>
+
+      <!-- Thống kê nhanh -->
+      <div class="row">
+         <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="card bg-one w-100">
+               <div class="card-body">
+                  <div class="db-widgets d-flex justify-content-between align-items-center">
+                     <div class="db-icon">
+                        <i class="fas fa-user-friends"></i>
+                     </div>
+                     <div class="db-info">
+                        <h3>25</h3>
+                        <h6>Nhân viên</h6>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="card bg-two w-100">
+               <div class="card-body">
+                  <div class="db-widgets d-flex justify-content-between align-items-center">
+                     <div class="db-icon">
+                        <i class="fas fa-award"></i>
+                     </div>
+                     <div class="db-info">
+                        <h3>10+</h3>
+                        <h6>Khen thưởng</h6>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="card bg-three w-100">
+               <div class="card-body">
+                  <div class="db-widgets d-flex justify-content-between align-items-center">
+                     <div class="db-icon">
+                        <i class="fas fa-store"></i>
+                     </div>
+                     <div class="db-info">
+                        <h3>3</h3>
+                        <h6>Bộ phận</h6>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="card bg-four w-100">
+               <div class="card-body">
+                  <div class="db-widgets d-flex justify-content-between align-items-center">
+                     <div class="db-icon">
+                        <i class="fas fa-coins"></i>
+                     </div>
+                     <div class="db-info">
+                        <h3>15,500,000₫</h3>
+                        <h6>Doanh thu</h6>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Biểu đồ -->
+      <div class="row">
+         <div class="col-md-12 col-lg-6">
+            <div class="card card-chart">
+               <div class="card-header">
+                  <div class="row align-items-center">
+                     <div class="col-6">
+                        <h5 class="card-title">Doanh thu</h5>
+                     </div>
+                     <div class="col-6 text-right">
+                        <select class="form-control form-control-sm">
+                           <option>Hôm nay</option>
+                           <option>Tuần trước</option>
+                           <option>Tháng trước</option>
+                        </select>
+                     </div>
+                  </div>
+               </div>
+               <div class="card-body">
+                  <div id="apexcharts-area"></div>
+               </div>
+            </div>
+         </div>
+         <div class="col-md-12 col-lg-6">
+            <div class="card card-chart">
+               <div class="card-header">
+                  <div class="row align-items-center">
+                     <div class="col-6">
+                        <h5 class="card-title">Số lượng ca làm</h5>
+                     </div>
+                     <div class="col-6 text-right">
+                        <select class="form-control form-control-sm">
+                           <option>Hôm nay</option>
+                           <option>Tuần trước</option>
+                           <option>Tháng trước</option>
+                        </select>
+                     </div>
+                  </div>
+               </div>
+               <div class="card-body">
+                  <div id="bar"></div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Bảng nhân viên xuất sắc -->
+      <div class="row">
+         <div class="col-md-6 d-flex">
+            <div class="card flex-fill">
+               <div class="card-header">
+                  <h5 class="card-title">Nhân viên xuất sắc</h5>
+               </div>
+               <div class="card-body">
+                  <div class="table-responsive">
+                     <table class="table table-hover table-center">
+                        <thead class="thead-light">
+                           <tr>
+                              <th>ID</th>
+                              <th>Tên</th>
+                              <th class="text-center">Số ca</th>
+                              <th class="text-center">Điểm KPI</th>
+                              <th class="text-right">Năm</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td>EMP001</td>
+                              <td>Nguyễn Văn A</td>
+                              <td class="text-center">28</td>
+                              <td class="text-center">95%</td>
+                              <td class="text-right">2025</td>
+                           </tr>
+                           <tr>
+                              <td>EMP002</td>
+                              <td>Trần Thị B</td>
+                              <td class="text-center">30</td>
+                              <td class="text-center">97%</td>
+                              <td class="text-right">2025</td>
+                           </tr>
+                           <tr>
+                              <td>EMP003</td>
+                              <td>Lê Văn C</td>
+                              <td class="text-center">26</td>
+                              <td class="text-center">92%</td>
+                              <td class="text-right">2025</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- Hoạt động nhân viên -->
+         <div class="col-md-6 d-flex">
+            <div class="card flex-fill">
+               <div class="card-header">
+                  <h5 class="card-title">Hoạt động nhân viên</h5>
+               </div>
+               <div class="card-body">
+                  <ul class="activity-feed">
+                     <li class="feed-item">
+                        <div class="feed-date">31/08</div>
+                        <span class="feed-text"><a>Nguyễn Văn A</a> check-in ca sáng</span>
+                     </li>
+                     <li class="feed-item">
+                        <div class="feed-date">30/08</div>
+                        <span class="feed-text"><a>Trần Thị B</a> được khen thưởng vì phục vụ tốt</span>
+                     </li>
+                     <li class="feed-item">
+                        <div class="feed-date">29/08</div>
+                        <span class="feed-text"><a>Lê Văn C</a> check-out muộn</span>
+                     </li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Footer -->
+      <footer>
+         <p>Copyright © 2025 CafeCheckIn.</p>
+      </footer>
+   </div>
+</div>
+
+<!-- Script -->
+<script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{%static 'assets/js/popper.min.js' %}"></script>
+<script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{%static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
+<script src="{%static 'assets/plugins/apexchart/chart-data.js' %}"></script>
+<script src="{%static 'assets/js/script.js' %}"></script>
+</body>
+</html>
+
+{% endblock %}

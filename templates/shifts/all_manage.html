@@ -1,0 +1,284 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Quản lý phân công ca</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'shift_schedule' %}">Ca làm việc</a>
+            </li>
+            <li class="breadcrumb-item active">Quản lý ca</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2">
+            <i class="fas fa-download"></i> Tải xuống
+          </a>
+          <a
+            href="{% url 'assignment_update_all' %}"
+            class="btn btn-outline-warning mr-2"
+          >
+            <i class="fas fa-sync-alt"></i> Cập nhật lại
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bảng 1: Danh sách loại ca -->
+    <div class="card card-table mb-4">
+      <div class="card-header bg-dark text-white">Danh sách loại ca</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-center mb-0 datatable">
+            <thead>
+              <tr>
+                <th class="text-center">Tên ca</th>
+                <th class="text-center">Giờ bắt đầu</th>
+                <th class="text-center">Giờ kết thúc</th>
+                <th class="text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in shifts %}
+              <tr>
+                <td class="text-center">
+                  <a
+                    href="#"
+                    class="text-primary font-weight-bold show-shift-qr"
+                    data-toggle="modal"
+                    data-target="#qrModal"
+                    data-name="{{ s.name }}"
+                    data-qr="{{ s.get_qr_url }}"
+                  >
+                    {{ s.name }}
+                  </a>
+                </td>
+                <td class="text-center">{{ s.start_time }}</td>
+                <td class="text-center">{{ s.end_time }}</td>
+                <td class="text-center">
+                  <div class="actions">
+                    <a
+                      href="{% url 'shift_edit' s.id %}"
+                      class="btn btn-sm bg-success-light mr-2"
+                    >
+                      <i class="fas fa-pen"></i>
+                    </a>
+                    <form
+                      action="{% url 'shift_delete' s.id %}"
+                      method="post"
+                      style="display: inline"
+                    >
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        class="btn btn-sm bg-danger-light"
+                        onclick="return confirm('Bạn có chắc muốn xóa ca này không?');"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">Chưa có ca nào</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bảng 2: Phân công ca -->
+    <div class="card card-table mb-4">
+      <div class="card-header bg-dark text-white">Phân công ca theo tuần</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-center mb-0 datatable">
+            <thead>
+              <tr>
+                <th class="text-center">Nhân viên</th>
+                <th class="text-center">Ca</th>
+                <th class="text-center">Thứ</th>
+                <th class="text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in assignments %}
+              <tr>
+                <td class="text-center">
+                  {{ a.employee.first_name }} {{ a.employee.last_name }}
+                </td>
+                <td class="text-center">{{ a.shift.name }}</td>
+                <td class="text-center">
+                  {% if a.weekday == 0 %} Thứ 2 {% elif a.weekday == 1 %} Thứ 3
+                  {% elif a.weekday == 2 %} Thứ 4 {% elif a.weekday == 3 %} Thứ
+                  5 {% elif a.weekday == 4 %} Thứ 6 {% elif a.weekday == 5 %}
+                  Thứ 7 {% elif a.weekday == 6 %} Chủ nhật {% endif %}
+                </td>
+
+                <td class="text-center">
+                  <div class="actions">
+                    <a
+                      href="{% url 'assignment_edit' a.id %}"
+                      class="btn btn-sm bg-success-light mr-2"
+                    >
+                      <i class="fas fa-pen"></i>
+                    </a>
+                    <form
+                      action="{% url 'assignment_delete' a.id %}"
+                      method="post"
+                      style="display: inline"
+                    >
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        class="btn btn-sm bg-danger-light"
+                        onclick="return confirm('Bạn có chắc muốn xóa phân công này không?');"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">Chưa có phân công nào</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bảng 3: Ca ngoại lệ -->
+    <div class="card card-table mb-4">
+      <div class="card-header bg-dark text-white">Ca ngoại lệ</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-center mb-0 datatable">
+            <thead>
+              <tr>
+                <th class="text-center">Nhân viên</th>
+                <th class="text-center">Ca</th>
+                <th class="text-center">Ngày / Thứ</th>
+                <th class="text-center">Giờ</th>
+                <th class="text-center">Lý do</th>
+                <th class="text-center">Loại</th>
+                <th class="text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in exceptions %}
+              <tr>
+                <td class="text-center">
+                  {{ e.employee.first_name }} {{ e.employee.last_name }}
+                </td>
+                <td class="text-center">{{ e.shift.name }}</td>
+                <td class="text-center">
+                  {% if e.date %} {{ e.date|date:"d/m/Y" }} {% else %} {{
+                  e.get_weekday_display }} {% endif %}
+                </td>
+                <td class="text-center">
+                  {{ e.start_time }} - {{ e.end_time }}
+                </td>
+                <td class="text-center">{{ e.reason }}</td>
+                <td class="text-center">{{ e.get_exception_type_display }}</td>
+                <td class="text-center">
+                  <div class="actions">
+                    <a
+                      href="{% url 'exception_edit' e.id %}"
+                      class="btn btn-sm bg-success-light mr-2"
+                    >
+                      <i class="fas fa-pen"></i>
+                    </a>
+                    <form
+                      action="{% url 'exception_delete' e.id %}"
+                      method="post"
+                      style="display: inline"
+                    >
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        class="btn btn-sm bg-danger-light"
+                        onclick="return confirm('Bạn có chắc muốn xóa ngoại lệ này không?');"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">Chưa có ngoại lệ nào</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal hiển thị QR code -->
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">QR Code Ca Làm</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <p><strong>Tên ca:</strong> <span id="qrModalName"></span></p>
+        <div
+          id="qrContainer"
+          style="display: flex; justify-content: center"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+  $("#qrModal").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget);
+    var name = button.data("name") || "";
+    var qrUrl = button.data("qr") || "";
+
+    var modal = $(this);
+    modal.find("#qrModalName").text(name);
+
+    // Clear QR trước khi vẽ lại
+    $("#qrContainer").empty();
+
+    if (qrUrl) {
+      new QRCode(document.getElementById("qrContainer"), {
+        text: qrUrl,
+        width: 250,
+        height: 250,
+      });
+    }
+  });
+</script>
+{% endblock %}

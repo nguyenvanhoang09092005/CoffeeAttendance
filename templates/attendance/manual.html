@@ -1,0 +1,94 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chấm công thủ công</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'attendance:list' %}">Chấm công</a>
+            </li>
+            <li class="breadcrumb-item active">Thêm thủ công</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- /Page Header -->
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="POST" action="">
+              {% csrf_token %}
+              <div class="form-group row">
+                <label class="col-lg-3 col-form-label">Nhân viên</label>
+                <div class="col-lg-9">
+                  <select name="employee_id" class="form-control" required>
+                    <option value="">-- Chọn nhân viên --</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}">
+                      {{ emp.first_name }} {{ emp.last_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-lg-3 col-form-label">Ca làm</label>
+                <div class="col-lg-9">
+                  <select name="shift_id" class="form-control" required>
+                    <option value="">-- Chọn ca làm --</option>
+                    {% for s in shifts %}
+                    <option value="{{ s.id }}">
+                      {{ s.name }} ({{ s.start_time }} - {{ s.end_time }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-lg-3 col-form-label">Ghi chú</label>
+                <div class="col-lg-9">
+                  <textarea
+                    name="note"
+                    class="form-control"
+                    placeholder="Lý do chấm công thủ công (nếu có)"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="text-right">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Lưu
+                </button>
+                <a href="{% url 'attendance:list' %}" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

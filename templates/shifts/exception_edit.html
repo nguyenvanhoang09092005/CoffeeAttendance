@@ -1,0 +1,108 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Chỉnh sửa ca ngoại lệ</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'all_manage' %}">Ca ngoại lệ</a></li>
+                        <li class="breadcrumb-item active">Sửa ngoại lệ</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="form-title"><span>Thông tin ngoại lệ</span></h5>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Nhân viên</label>
+                                        <select name="employee" class="form-control">
+                                            {% for e in employees %}
+                                                <option value="{{ e.id }}" {% if exception.employee.id == e.id %}selected{% endif %}>
+                                                    {{ e.first_name }} {{ e.last_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ca</label>
+                                        <select name="shift" class="form-control">
+                                            {% for s in shifts %}
+                                                <option value="{{ s.id }}" {% if exception.shift.id == s.id %}selected{% endif %}>
+                                                    {{ s.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ngày</label>
+                                        <input type="date" name="date" class="form-control" value="{{ exception.date|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Thứ (nếu không có ngày)</label>
+                                        <select name="weekday" class="form-control">
+                                            <option value="">-- Không chọn --</option>
+                                            {% for key, value in weekdays %}
+                                                <option value="{{ key }}" {% if exception.weekday == key %}selected{% endif %}>{{ value }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Giờ bắt đầu</label>
+                                        <input type="time" name="start_time" class="form-control" value="{{ exception.start_time|time:'H:i' }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Giờ kết thúc</label>
+                                        <input type="time" name="end_time" class="form-control" value="{{ exception.end_time|time:'H:i' }}">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label>Lý do</label>
+                                        <textarea name="reason" class="form-control">{{ exception.reason }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Loại ngoại lệ</label>
+                                        <select name="exception_type" class="form-control">
+                                            {% for key, value in exception_types %}
+                                                <option value="{{ key }}" {% if exception.exception_type == key %}selected{% endif %}>{{ value }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                                    <a href="{% url 'all_manage' %}" class="btn btn-secondary">Hủy</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

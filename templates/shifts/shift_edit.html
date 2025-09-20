@@ -1,0 +1,81 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chỉnh sửa loại ca</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'all_manage' %}">Loại ca</a>
+            </li>
+            <li class="breadcrumb-item active">Sửa ca</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="form-title"><span>Thông tin ca</span></h5>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Tên ca</label>
+                    <input
+                      type="text"
+                      name="name"
+                      class="form-control"
+                      value="{{ shift.name }}"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Giờ bắt đầu</label>
+                    <input
+                      type="time"
+                      name="start_time"
+                      class="form-control"
+                      value="{{ shift.start_time|time:'H:i' }}"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Giờ kết thúc</label>
+                    <input
+                      type="time"
+                      name="end_time"
+                      class="form-control"
+                      value="{{ shift.end_time|time:'H:i' }}"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary">
+                    Cập nhật
+                  </button>
+                  <a href="{% url 'all_manage' %}" class="btn btn-secondary"
+                    >Hủy</a
+                  >
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

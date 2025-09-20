@@ -1,0 +1,346 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=0"
+    />
+    <title>Da Cuoi - Dashboard</title>
+    <link rel="shortcut icon" href="{%static 'assets/img/davicon.png' %}" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{%static 'assets/plugins/bootstrap/css/bootstrap.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{%static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{%static 'assets/plugins/fontawesome/css/all.min.css' %}"
+    />
+    <link rel="stylesheet" href="{%static 'assets/css/style.css' %}" />
+  </head>
+  <body>
+    <div class="main-wrapper">
+      <div class="header">
+        <!-- Logo -->
+        <div class="header-left">
+          <a href="#" class="logo-text">
+            <span class="brand-main">DA</span>
+            <span class="brand-sub">CUOI</span>
+          </a>
+        </div>
+
+        <!-- Menu toggle -->
+        <a href="javascript:void(0);" id="toggle_btn">
+          <i class="fas fa-align-left"></i>
+        </a>
+
+        <!-- Search -->
+        <div class="top-nav-search">
+          <form method="get" action="#">
+            <input
+              type="text"
+              name="q"
+              class="form-control"
+              placeholder="Tìm kiếm ca làm việc..."
+            />
+            <button class="btn" type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Mobile toggle -->
+        <a class="mobile_btn" id="mobile_btn"><i class="fas fa-bars"></i></a>
+
+        <!-- Right menu -->
+        <ul class="nav user-menu">
+          <!-- Thông báo -->
+          <li class="nav-item dropdown noti-dropdown">
+            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+              <i class="far fa-bell"></i>
+              {% if unread_notification_count > 0 %}
+              <span class="badge badge-pill"
+                >{{ unread_notification_count }}</span
+              >
+              {% endif %}
+            </a>
+            <div class="dropdown-menu notifications">
+              <div class="topnav-dropdown-header">
+                <span class="notification-title">Thông báo</span>
+                <a href="" class="clear-noti">Xóa hết</a>
+              </div>
+              <div class="noti-content">
+                <ul class="notification-list">
+                  {% for notification in unread_notification %}
+                  <li class="notification-message">
+                    <a href="#">
+                      <div class="media">
+                        <span class="avatar avatar-sm">
+                          <img
+                            class="avatar-img rounded-circle"
+                            alt="User"
+                            src="{% static 'assets/img/profiles/avatar-02.jpg' %}"
+                          />
+                        </span>
+                        <div class="media-body">
+                          <p class="noti-details">
+                            <span class="noti-title"
+                              >{{ notification.user.username }}</span
+                            >
+                            {{ notification.message }}
+                          </p>
+                          <p class="noti-time">
+                            <span class="notification-time"
+                              >{{ notification.created_at|timesince }}
+                              trước</span
+                            >
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  {% empty %}
+                  <li>
+                    <p class="text-center text-muted m-2">
+                      Không có thông báo mới
+                    </p>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="topnav-dropdown-footer">
+                <a href="">Xem tất cả</a>
+              </div>
+            </div>
+          </li>
+
+          <!-- User Menu -->
+          <li class="nav-item dropdown has-arrow">
+            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+              <span class="user-img">
+                <img
+                  src="{% static 'assets/img/profiles/avatar.png' %}"
+                  alt="{{ user.username }}"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    object-position: center;
+                  "
+                />
+              </span>
+            </a>
+
+            <div class="dropdown-menu">
+              <div class="user-header">
+                <div class="avatar avatar-sm">
+                  <img
+                    src="{% static 'assets/img/profiles/avatar.png' %}"
+                    alt="User"
+                    class="avatar-img rounded-circle"
+                  />
+                </div>
+                <div class="user-text">
+                  <h6>{{ user.username }}</h6>
+                  <p class="text-muted mb-0">
+                    {% comment %} {% if user.is_superuser %} Quản trị viên {%
+                    elif user.is_staff %} Nhân viên quản lý {% else %} Nhân viên
+                    {% endif %} {% endcomment %}
+                  </p>
+                </div>
+              </div>
+              <a class="dropdown-item" href="">Hồ sơ cá nhân</a>
+              <a class="dropdown-item" href="">Đăng xuất</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-inner slimscroll">
+          <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+              <!-- Main -->
+              <li class="menu-title"><span>Main Menu</span></li>
+
+              <li>
+                <a href="#">
+                  <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+              </li>
+
+              <!-- Ca làm việc -->
+              <li class="submenu">
+                <a href="#">
+                  <i class="fas fa-clock"></i> <span>Ca làm việc</span>
+                  <span class="menu-arrow"></span>
+                </a>
+                <ul>
+                  <li><a href="{% url 'show_shift' %}">Danh sách ca</a></li>
+                  <li><a href="#">Ca của bạn</a></li>
+                </ul>
+              </li>
+
+              <!-- Chấm công -->
+              <li class="submenu">
+                <a href="#">
+                  <i class="fas fa-check-circle"></i> <span>Chấm công</span>
+                  <span class="menu-arrow"></span>
+                </a>
+                <ul>
+                  <li><a href="#">Check-in</a></li>
+                  <li><a href="#">Check-out</a></li>
+                  <li>
+                    <a href="#">Lịch sử chấm công</a>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- Lương & Chi phí -->
+              <li class="submenu">
+                <a href="#">
+                  <i class="fas fa-file-invoice-dollar"></i>
+                  <span>Lương & Chi phí</span>
+                  <span class="menu-arrow"></span>
+                </a>
+                <ul>
+                  <li><a href="#">Bảng lương</a></li>
+                </ul>
+              </li>
+
+              <!-- Báo cáo -->
+              <li class="submenu">
+                <a href="#">
+                  <i class="fas fa-chart-line"></i> <span>Báo cáo</span>
+                  <span class="menu-arrow"></span>
+                </a>
+                <ul>
+                  <li><a href="">Thống kê</a></li>
+                </ul>
+              </li>
+
+              <!-- Nghỉ phép -->
+              <li>
+                <a href="">
+                  <i class="fas fa-calendar-times"></i>
+                  <span>Yêu cầu nghỉ phép</span>
+                </a>
+              </li>
+
+              <!-- Ghi chú & Nhắn tin -->
+              <li>
+                <a href="">
+                  <i class="fas fa-sticky-note"></i> <span>Ghi chú nội bộ</span>
+                </a>
+              </li>
+              <li>
+                <a href="">
+                  <i class="fas fa-comments"></i> <span>Nhắn tin nội bộ</span>
+                </a>
+              </li>
+
+              <!-- Auth -->
+              <li class="menu-title"><span>Authentication</span></li>
+              <li>
+                <a href=""><i class="fas fa-sign-in-alt"></i> Login</a>
+              </li>
+              <li>
+                <a href=""><i class="fas fa-user-plus"></i> Register</a>
+              </li>
+              <li>
+                <a href=""><i class="fas fa-unlock-alt"></i> Forgot Password</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {% block body %} {% endblock %}
+    </div>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.min.js"></script>
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", function () {
+        // Select the notification dropdown element
+        const notiDropdown = document.querySelector(".noti-dropdown");
+        const clearAllBtn = document.querySelector(".clear-noti");
+
+        if (notiDropdown) {
+          // Add a click event listener to the notification dropdown
+          notiDropdown.addEventListener("click", function () {
+            const url = "#";
+
+            // Use the Fetch API to send a POST request to mark notifications as read
+            fetch(url, {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            })
+              .then((response) => response.json()) // Parse the JSON response
+              .then((data) => {
+                if (data.status === "success") {
+                  // Remove the badge if notifications are successfully marked as read
+                  const badge = document.querySelector(".badge");
+                  if (badge) {
+                    badge.remove();
+                  }
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error); // Log any errors
+              });
+          });
+        }
+
+        if (clearAllBtn) {
+          // Add a click event listener to the "Clear All" button
+          clearAllBtn.addEventListener("click", function () {
+            const clearUrl = "#"; // Ensure this URL points to the correct view
+
+            // Use Fetch to send a POST request to clear all notifications
+            fetch(clearUrl, {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            })
+              .then((response) => response.json()) // Parse the JSON response
+              .then((data) => {
+                if (data.status === "success") {
+                  // Clear all notifications from the dropdown
+                  const notificationList =
+                    document.querySelector(".notification-list");
+                  if (notificationList) {
+                    notificationList.innerHTML =
+                      "<li>No new notifications</li>"; // Optionally show a "No new notifications" message
+                  }
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error); // Log any errors
+              });
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

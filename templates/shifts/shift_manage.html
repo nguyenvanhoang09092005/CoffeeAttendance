@@ -1,0 +1,241 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+   
+         <div class="page-wrapper">
+            <div class="content container-fluid">
+               <div class="page-header">
+                  <div class="row align-items-center">
+                     <div class="col">
+                        <h3 class="page-title">Tạo ca làm việc</h3>
+                        <ul class="breadcrumb">
+                           <li class="breadcrumb-item"><a href="{% url 'shift_schedule' %}">Ca làm việc</a></li>
+                           <li class="breadcrumb-item active">Tạo ca làm việc</li>
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+            <input type="hidden" name="form_type" value="shift">
+          <div class="row">
+            <div class="col-12">
+              <h5 class="form-title"><span>Thông tin ca làm</span></h5>
+            </div>
+
+            <!-- Tên ca -->
+            <div class="col-12 col-sm-6">
+              <div class="form-group">
+                <label>Tên ca</label>
+                <input type="text" class="form-control" name="name" required>
+              </div>
+            </div>
+
+            <!-- Giờ bắt đầu -->
+            <div class="col-12 col-sm-3">
+              <div class="form-group">
+                <label>Giờ bắt đầu</label>
+                <input type="time" class="form-control" name="start_time" required>
+              </div>
+            </div>
+
+            <!-- Giờ kết thúc -->
+            <div class="col-12 col-sm-3">
+              <div class="form-group">
+                <label>Giờ kết thúc</label>
+                <input type="time" class="form-control" name="end_time" required>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">Lưu ca</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+            <input type="hidden" name="form_type" value="assignment">
+          <div class="row">
+            <div class="col-12">
+              <h5 class="form-title"><span>Phân công ca theo tuần</span></h5>
+            </div>
+
+            <!-- Nhân viên -->
+            <div class="col-12 col-sm-4">
+              <div class="form-group">
+                <label>Nhân viên</label>
+                <select class="form-control" name="employee" required>
+                  <option value="">Chọn nhân viên</option>
+                  {% for emp in employees %}
+                    <option value="{{ emp.id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- Ngày trong tuần -->
+            <div class="col-12 col-sm-4">
+              <div class="form-group">
+                <label>Ngày trong tuần</label>
+                <select class="form-control" name="weekday" required>
+                  <option value="">Chọn ngày</option>
+                  <option value="0">Thứ 2</option>
+                  <option value="1">Thứ 3</option>
+                  <option value="2">Thứ 4</option>
+                  <option value="3">Thứ 5</option>
+                  <option value="4">Thứ 6</option>
+                  <option value="5">Thứ 7</option>
+                  <option value="6">Chủ nhật</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Chọn ca -->
+            <div class="col-12 col-sm-4">
+              <div class="form-group">
+                <label>Ca làm</label>
+                <select class="form-control" name="shift" required>
+                  <option value="">Chọn ca</option>
+                  {% for s in shifts %}
+                    <option value="{{ s.id }}">{{ s.name }} ({{ s.start_time }} - {{ s.end_time }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">Lưu phân công</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+            <input type="hidden" name="form_type" value="exception">
+          <h5 class="form-title"><span>Ngoại lệ ca làm</span></h5>
+
+          <!-- Nhân viên -->
+          <div class="form-group">
+            <label>Nhân viên</label>
+            <select class="form-control" name="employee" required>
+              <option value="">Chọn nhân viên</option>
+              {% for emp in employees %}
+                <option value="{{ emp.id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Loại ngoại lệ -->
+          <div class="form-group">
+            <label>Loại ngoại lệ</label>
+            <select class="form-control" id="exception_type" name="exception_type" required>
+              <option value="once">Chỉ 1 ngày</option>
+              <option value="permanent">Cố định</option>
+            </select>
+          </div>
+
+          <!-- Ngày (chỉ khi chọn once) -->
+          <div class="form-group" id="date_group">
+            <label>Ngày</label>
+            <input type="date" class="form-control" name="date">
+          </div>
+
+          <!-- Thứ (chỉ khi chọn permanent) -->
+          <div class="form-group" id="weekday_group" style="display: none;">
+            <label>Thứ trong tuần</label>
+            <select class="form-control" name="weekday">
+              <option value="">Chọn thứ</option>
+              <option value="0">Thứ 2</option>
+              <option value="1">Thứ 3</option>
+              <option value="2">Thứ 4</option>
+              <option value="3">Thứ 5</option>
+              <option value="4">Thứ 6</option>
+              <option value="5">Thứ 7</option>
+              <option value="6">Chủ nhật</option>
+            </select>
+          </div>
+
+          <!-- Giờ bắt đầu -->
+          <div class="form-group">
+            <label>Giờ bắt đầu</label>
+            <input type="time" class="form-control" name="start_time" required>
+          </div>
+
+          <!-- Giờ kết thúc -->
+          <div class="form-group">
+            <label>Giờ kết thúc</label>
+            <input type="time" class="form-control" name="end_time" required>
+          </div>
+
+          <!-- Lý do -->
+          <div class="form-group">
+            <label>Lý do</label>
+            <input type="text" class="form-control" name="reason">
+          </div>
+
+          <!-- Thêm lựa chọn thêm hay nghỉ -->
+          <div class="form-group">
+            <label>Hành động</label>
+            <select class="form-control" name="is_added" required>
+              <option value="true">Thêm/Thay thế</option>
+              <option value="false">Nghỉ ca</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-warning">Lưu ngoại lệ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+            </div>
+         </div>
+      </div>
+      <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+      <script src="{%static 'assets/js/popper.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+      <script src="{%static 'assets/js/script.js' %}"></script>
+   </body>
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/add-student.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:50 GMT -->
+</html>
+
+
+<script>
+  document.getElementById("exception_type").addEventListener("change", function () {
+    let dateGroup = document.getElementById("date_group");
+    let weekdayGroup = document.getElementById("weekday_group");
+
+    if (this.value === "once") {
+      dateGroup.style.display = "block";
+      weekdayGroup.style.display = "none";
+    } else {
+      dateGroup.style.display = "none";
+      weekdayGroup.style.display = "block";
+    }
+  });
+</script>
+
+
+{% endblock %}

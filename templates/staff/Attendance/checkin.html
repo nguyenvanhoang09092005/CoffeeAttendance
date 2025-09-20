@@ -1,0 +1,140 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chấm công</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Chấm công</a></li>
+            <li class="breadcrumb-item active">Check-in</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="mb-3 text-primary">
+              Check-in cho <b>{{ attendance.employee }}</b>
+              <br />
+              <small class="text-muted">Ca: {{ shift.name }}</small>
+            </h4>
+
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+                <!-- Camera -->
+                <div class="col-md-6 text-center mb-3">
+                  <label class="form-label">Chụp ảnh khuôn mặt</label>
+                  <div class="camera-box border rounded p-2">
+                    <video
+                      id="video"
+                      width="320"
+                      height="240"
+                      autoplay
+                      style="display: none"
+                    ></video>
+                    <canvas
+                      id="canvas"
+                      width="320"
+                      height="240"
+                      style="display: none"
+                    ></canvas>
+                  </div>
+                  <input type="file" name="face_image" id="face_image" hidden />
+                  <div class="mt-2">
+                    <button
+                      type="button"
+                      id="startCamera"
+                      class="btn btn-primary btn-sm"
+                    >
+                      🎥 Mở camera
+                    </button>
+                    <button
+                      type="button"
+                      id="capture"
+                      class="btn btn-warning btn-sm"
+                      disabled
+                    >
+                      📸 Chụp ảnh
+                    </button>
+                  </div>
+                </div>
+
+                <!-- GPS -->
+                <input type="hidden" name="latitude" id="latitude" />
+                <input type="hidden" name="longitude" id="longitude" />
+
+                <!-- Submit -->
+                <div class="col-12 text-center mt-4">
+                  <button type="submit" class="btn btn-success btn-lg">
+                    ✅ Xác nhận Check-in
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === GPS ===
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        document.getElementById("latitude").value = pos.coords.latitude;
+        document.getElementById("longitude").value = pos.coords.longitude;
+      },
+      function (err) {
+        alert("⚠️ Không lấy được GPS: " + err.message);
+      }
+    );
+  }
+
+  // === Camera ===
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const startBtn = document.getElementById("startCamera");
+  const captureBtn = document.getElementById("capture");
+  const faceInput = document.getElementById("face_image");
+  let stream = null;
+
+  // Mở camera khi bấm nút
+  startBtn.addEventListener("click", async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      await video.play(); // đảm bảo video chạy
+      video.style.display = "block";
+      captureBtn.disabled = false;
+      alert("✅ Camera đã bật, bạn có thể chụp ảnh!");
+    } catch (err) {
+      console.error("Camera error:", err);
+      alert("⚠️ Không truy cập được camera: " + err.message);
+    }
+  });
+
+  // Chụp ảnh
+  captureBtn.addEventListener("click", () => {
+    if (!stream) {
+      alert("⚠️ Bạn chưa mở camera!");
+      return;
+    }
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "face.png", { type: "image/png" });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      faceInput.files = dataTransfer.files;
+    });
+    alert("📷 Đã chụp ảnh khuôn mặt!");
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row">
+        <div class="col-sm-12">
+          <h3 class="page-title">Chi tiết nhân viên</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'employee_list' %}">Nhân viên</a>
+            </li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="about-info">
+              <h4>Thông tin nhân viên</h4>
+              <div class="media mt-3">
+                {% if employee.employee_image %}
+                <img
+                  src="{{ employee.employee_image.url }}"
+                  class="mr-3"
+                  alt="Ảnh nhân viên"
+                  style="max-width: 150px"
+                />
+                {% else %}
+                <img
+                  src="{% static 'assets/img/no-avatar.png' %}"
+                  class="mr-3"
+                  alt="No image"
+                  style="max-width: 150px"
+                />
+                {% endif %}
+                <div class="media-body">
+                  <ul>
+                    <li>
+                      <span class="title-span">Họ tên: </span>
+                      <span class="info-span">
+                        {{ employee.first_name }} {{ employee.last_name }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Mã NV: </span>
+                      <span class="info-span">{{ employee.employee_id }}</span>
+                    </li>
+                    <li>
+                      <span class="title-span">Email: </span>
+                      <span class="info-span"
+                        >{{ employee.email|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Giới tính: </span>
+                      <span class="info-span"
+                        >{{ employee.get_gender_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày sinh: </span>
+                      <span class="info-span"
+                        >{{ employee.date_of_birth|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Chức vụ: </span>
+                      <span class="info-span"
+                        >{{ employee.get_position_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày vào làm: </span>
+                      <span class="info-span"
+                        >{{ employee.joining_date|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Số điện thoại: </span>
+                      <span class="info-span"
+                        >{{ employee.mobile_number|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Địa chỉ: </span>
+                      <span class="info-span"
+                        >{{ employee.address|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngân hàng: </span>
+                      <span class="info-span"
+                        >{{ employee.bank_name|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Số tài khoản: </span>
+                      <span class="info-span"
+                        >{{ employee.bank_account_number|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Trạng thái: </span>
+                      <span class="info-span"
+                        >{{ employee.get_employment_status_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày nghỉ việc: </span>
+                      <span class="info-span"
+                        >{{ employee.resignation_date|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
