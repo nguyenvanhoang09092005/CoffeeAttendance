@@ -1,0 +1,93 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">
+            Đăng ký khuôn mặt: {{ employee.first_name }}
+          </h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'employee_list' %}">Nhân viên</a>
+            </li>
+            <li class="breadcrumb-item active">Đăng ký khuôn mặt</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 offset-md-3 text-center">
+        <div class="card">
+          <div class="card-body">
+            <video id="video" width="320" height="240" autoplay></video>
+            <br />
+            <button id="capture" class="btn btn-primary mt-3">
+              <i class="fas fa-camera"></i> Chụp & Đăng ký
+            </button>
+            <canvas
+              id="canvas"
+              width="320"
+              height="240"
+              style="display: none"
+            ></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+<script>
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      document.getElementById("video").srcObject = stream;
+    })
+    .catch((err) => alert("Không thể mở camera: " + err));
+
+  document.getElementById("capture").addEventListener("click", () => {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(document.getElementById("video"), 0, 0, 320, 240);
+
+    canvas.toBlob((blob) => {
+      const form = new FormData();
+      form.append("face_image", blob, "face.png");
+
+      fetch("", {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        body: form,
+      })
+        .then((res) => res.json())
+        .then((j) => {
+          if (j.need_confirm) {
+            if (confirm(j.message)) {
+              // Gửi lại request kèm confirm_replace=1
+              form.append("confirm_replace", "1");
+              fetch("", {
+                method: "POST",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                body: form,
+              })
+                .then((res2) => res2.json())
+                .then((j2) => alert(j2.message));
+            }
+          } else {
+            alert(j.message);
+          }
+        })
+        .catch((e) => alert("Lỗi: " + e));
+    }, "image/png");
+  });
+</script>
+
+{% endblock %}

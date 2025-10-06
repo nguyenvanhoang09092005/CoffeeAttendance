@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Employee
+from .models import Employee,EmployeeFace
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -31,3 +31,7 @@ class EmployeeAdmin(admin.ModelAdmin):
         'employment_status'
     )
     readonly_fields = ('employee_image',)
+
+@admin.register(EmployeeFace)
+class EmployeeFaceAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'created_at')

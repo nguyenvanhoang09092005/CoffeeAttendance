@@ -24,7 +24,7 @@ class Employee(models.Model):
     position = models.CharField(
         max_length=50,
         choices=[
-            ('Manager', 'Quản lý'),
+            ('Manager', 'quin lý'),
             ('Cashier', 'Thu ngân'),
             ('Barista', 'Pha chế'),
             ('Waiter', 'Phục vụ'),
@@ -78,3 +78,13 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.employee_id})"
+
+
+class EmployeeFace(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="faces")
+    face_image = models.ImageField(upload_to="employee_faces/")
+    face_encoding = models.JSONField(null=True, blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Khuôn mặt của {self.employee}"

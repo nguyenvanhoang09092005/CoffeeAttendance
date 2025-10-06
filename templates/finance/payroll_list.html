@@ -1,0 +1,248 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+
+<style>
+  form select,
+  form input[type="date"],
+  form input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 4px rgba(255, 193, 7, 0.4);
+  }
+
+  .btn-warning {
+    background-color: #b7791f;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-warning:hover {
+    background-color: #d69e2e;
+    transform: scale(1.1);
+  }
+</style>
+
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Danh sách bảng lương</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item active">Bảng lương</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2">
+            <i class="fas fa-download"></i> Download
+          </a>
+          <a href="{% url 'finance:payroll_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+
+              <!-- Nhân viên -->
+              <div class="col-md-4 d-flex justify-content-center align-items-center">
+                <div class="form-group mb-0 w-100 text-center">
+                  {{ filter_form.employee }}
+                </div>
+              </div>
+
+              <!-- Trạng thái -->
+              <div class="col-md-2">
+                <div class="form-group mb-0">
+                  {{ filter_form.status }}
+                </div>
+              </div>
+
+              <!-- Ngày bắt đầu -->
+              <div class="col-md-2">
+                <div class="form-group mb-0">
+                  {{ filter_form.start_date }}
+                </div>
+              </div>
+
+              <!-- Ngày kết thúc -->
+              <div class="col-md-2">
+                <div class="form-group mb-0">
+                  {{ filter_form.end_date }}
+                </div>
+              </div>
+
+              <!-- Nút tìm kiếm -->
+              <div class="col-md-1 d-flex justify-content-center">
+                <button type="submit" class="btn btn-warning text-white rounded-circle shadow-sm" title="Tìm kiếm">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payroll Table -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">STT</th>
+                    <th class="text-center">Nhân viên</th>
+                    <th class="text-center">Kỳ lương</th>
+                    <th class="text-center">Tổng giờ</th>
+                    <th class="text-center">Thực nhận</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for payroll in payrolls %}
+                  <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+
+                    <!-- Nhân viên -->
+                    <td class="text-center">
+                      <div class="d-flex align-items-center">
+                        {% if payroll.employee.employee_image %}
+                          <img src="{{ payroll.employee.employee_image.url }}"
+                               alt="{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}"
+                               class="rounded-circle mr-3"
+                               width="45" height="45"
+                               style="object-fit: cover;">
+                        {% else %}
+                          <div class="avatar-circle bg-primary-light text-primary mr-3"
+                               style="width:45px; height:45px; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                            {{ payroll.employee.first_name|slice:":1" }}{{ payroll.employee.last_name|slice:":1" }}
+                          </div>
+                        {% endif %}
+
+                        <div>
+                          <a href="{% url 'finance:payroll_detail' payroll.pk %}"
+                             class="font-weight-bold text-dark hover-primary">
+                            {{ payroll.employee.first_name }} {{ payroll.employee.last_name }}
+                          </a>
+                          <div class="small text-muted">
+                            <i class="fas fa-id-badge mr-1"></i>{{ payroll.employee.employee_id }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Kỳ lương -->
+                    <td class="text-center">
+                      {{ payroll.start_date|date:"d/m/Y" }}
+                      <small class="text-muted mx-1">đến</small>
+                      {{ payroll.end_date|date:"d/m/Y" }}
+                    </td>
+
+                    <!-- Tổng giờ -->
+                    <td class="text-center">{{ payroll.total_hours }}h</td>
+
+                    <!-- Thực nhận -->
+                    <td class="text-center">
+                      <strong class="text-muted" style="font-size: 1.1rem;">
+                        {{ payroll.net_salary|floatformat:0 }} VND
+                      </strong>
+                    </td>
+
+                    <!-- Trạng thái -->
+                    <td class="text-center">
+                      {% if payroll.status == 'draft' %}
+                        <span class="badge badge-secondary">Nháp</span>
+                      {% elif payroll.status == 'pending' %}
+                        <span class="badge badge-warning">Chờ duyệt</span>
+                      {% elif payroll.status == 'approved' %}
+                        <span class="badge badge-info">Đã duyệt</span>
+                      {% elif payroll.status == 'paid' %}
+                        <span class="badge badge-success">Đã thanh toán</span>
+                      {% else %}
+                        <span class="badge badge-danger">Đã hủy</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- Hành động -->
+                    <td class="text-center">
+                      <div class="actions">
+                        <a href="{% url 'finance:payroll_detail' payroll.pk %}" class="btn btn-sm bg-info-light mr-2">
+                          <i class="fas fa-eye"></i>
+                        </a>
+
+                        {% if payroll.status == 'draft' or payroll.status == 'pending' %}
+                          <a href="{% url 'finance:payroll_update' payroll.pk %}" class="btn btn-sm bg-success-light mr-2">
+                            <i class="fas fa-pen"></i>
+                          </a>
+                        {% endif %}
+
+                        {% if payroll.status == 'pending' %}
+                          <a href="{% url 'finance:payroll_approve' payroll.pk %}" class="btn btn-sm bg-primary-light mr-2" title="Phê duyệt">
+                            <i class="fas fa-check"></i>
+                          </a>
+                        {% endif %}
+
+                        {% if payroll.status == 'draft' %}
+                          <a href="{% url 'finance:payroll_delete' payroll.pk %}" class="btn btn-sm bg-danger-light"
+                             onclick="return confirm('Bạn có chắc muốn xóa bảng lương này?');">
+                            <i class="fas fa-trash"></i>
+                          </a>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">Chưa có bảng lương nào</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+{% endblock %}

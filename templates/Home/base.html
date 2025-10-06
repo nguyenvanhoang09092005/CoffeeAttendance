@@ -448,12 +448,17 @@
                   <span class="menu-arrow"></span>
                 </a>
                 <ul>
-                  <li><a href="#">Bảng lương</a></li>
-                  <li><a href="">Chi phí quán</a></li>
-                  <li><a href="">Doanh thu</a></li>
+                  <li>
+                    <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'finance:expense_list' %}">Chi phí quán</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'finance:revenue_list' %}">Doanh thu</a>
+                  </li>
                 </ul>
               </li>
-
               <!-- Kho & Nguyên liệu -->
               <li class="submenu">
                 <a href="#">

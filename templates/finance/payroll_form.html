@@ -1,0 +1,175 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">
+            {% if payroll %}Sửa bảng lương{% else %}Tạo bảng lương mới{% endif %}
+          </h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
+            </li>
+            <li class="breadcrumb-item active">
+              {% if payroll %}Sửa{% else %}Tạo mới{% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-10 offset-md-1">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title mb-0">Thông tin bảng lương</h4>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>
+                      {{ form.employee.label }}
+                      <span class="text-danger">*</span>
+                    </label>
+                    {{ form.employee }}
+                    {% if form.employee.errors %}
+                    <div class="text-danger small">
+                      {{ form.employee.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>
+                      {{ form.start_date.label }}
+                      <span class="text-danger">*</span>
+                    </label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                    <div class="text-danger small">
+                      {{ form.start_date.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>
+                      {{ form.end_date.label }}
+                      <span class="text-danger">*</span>
+                    </label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                    <div class="text-danger small">
+                      {{ form.end_date.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <hr />
+                  <h5 class="mb-3">Tính lương</h5>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>
+                      {{ form.hourly_rate.label }}
+                      <span class="text-danger">*</span>
+                    </label>
+                    {{ form.hourly_rate }}
+                    {% if form.hourly_rate.errors %}
+                    <div class="text-danger small">
+                      {{ form.hourly_rate.errors }}
+                    </div>
+                    {% endif %}
+                    <small class="text-muted">
+                      Hệ thống sẽ tự động tính tổng giờ từ chấm công
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <hr />
+                  <h5 class="mb-3">Các khoản phụ</h5>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ form.bonus.label }}</label>
+                    {{ form.bonus }}
+                    {% if form.bonus.errors %}
+                    <div class="text-danger small">{{ form.bonus.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ form.advance.label }}</label>
+                    {{ form.advance }}
+                    {% if form.advance.errors %}
+                    <div class="text-danger small">
+                      {{ form.advance.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ form.deduction.label }}</label>
+                    {{ form.deduction }}
+                    {% if form.deduction.errors %}
+                    <div class="text-danger small">
+                      {{ form.deduction.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="text-danger small">{{ form.notes.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Sau
+                khi tạo, hệ thống sẽ tự động tính tổng giờ làm và lương dựa trên
+                dữ liệu chấm công.
+              </div>
+              <div class="text-right">
+                
+                  href="{% url 'finance:payroll_list' %}"
+                  class="btn btn-secondary"
+                >
+                  <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-check"></i> Lưu & Tính lương
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><p>Bản quyền thuộc về Đá Cuội.</p></footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

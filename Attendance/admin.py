@@ -19,7 +19,7 @@ class AttendanceAdmin(admin.ModelAdmin):
         "employee__last_name",
         "employee__employee_id",
     )
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "unique_token")
 
     fieldsets = (
         ("Thông tin nhân viên & ca", {
@@ -29,12 +29,12 @@ class AttendanceAdmin(admin.ModelAdmin):
             "fields": ("check_in_time", "check_out_time"),
         }),
         ("Xác thực", {
-            "fields": ("face_image", "face_verified"),
+            "fields": ("face_image", "face_verified", "matched_face"),
         }),
         ("Định vị GPS", {
-            "fields": ("latitude", "longitude", "location_note"),
+            "fields": ("latitude", "longitude", "distance_meters", "location_note"),
         }),
         ("Khác", {
-            "fields": ("method", "manual_by", "note", "created_at"),
+            "fields": ("method", "manual_by", "note", "unique_token", "created_at"),
         }),
     )

@@ -26,6 +26,7 @@ urlpatterns = [
     path('employee/',include("employee.urls")),
     path('shifts/' , include("Shift.urls")),
     path("attendance/", include("Attendance.urls", namespace="attendance")),
+    path("finance/", include("finance.urls", namespace="finance")),
 ]
 
 if settings.DEBUG:

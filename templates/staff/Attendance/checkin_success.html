@@ -1,0 +1,162 @@
+{% extends "staff/Dashboard/base.html" %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 text-center p-5">
+          <!-- Icon animation -->
+          <div class="mb-4">
+            <div class="success-checkmark">
+              <div class="check-icon">
+                <span class="icon-line line-tip"></span>
+                <span class="icon-line line-long"></span>
+                <div class="icon-circle"></div>
+                <div class="icon-fix"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nội dung -->
+          {% if attendance.check_out_time %}
+          <h2 class="fw-bold text-success mb-3">✅ Check-out thành công!</h2>
+          <p class="text-muted">
+            Xin chào <b>{{ attendance.employee }}</b> 👋<br />
+            Bạn đã hoàn tất ca làm
+            <span class="fw-bold text-primary"
+              >{{ attendance.shift.name }}</span
+            >
+          </p>
+          {% else %}
+          <h2 class="fw-bold text-success mb-3">✅ Check-in thành công!</h2>
+          <p class="text-muted">
+            Xin chào <b>{{ attendance.employee }}</b> 👋<br />
+            Bạn đã bắt đầu ca làm:
+            <span class="fw-bold text-primary"
+              >{{ attendance.shift.name }}</span
+            >
+          </p>
+          {% endif %}
+
+          <!-- Thông tin thời gian + vị trí -->
+          <div class="mt-4 text-start">
+            <p>
+              🕑 <b>Giờ vào:</b>
+              <b>{{ attendance.check_in_time|date:"H:i:s d/m/Y" }}</b>
+            </p>
+            {% if attendance.check_out_time %}
+            <p>
+              🕓 <b>Giờ ra:</b
+              ><b>{{ attendance.check_out_time|date:"H:i:s d/m/Y" }}</b>
+            </p>
+            {% endif %}
+            <p>📍 <b>Địa chỉ:</b> {{ attendance.location_note }}</p>
+
+            {% if attendance.distance_meters %}
+            <p>
+              📏 <b>Khoảng cách:</b>
+              {% if attendance.distance_meters < 1000 %} {{
+              attendance.distance_meters|floatformat:0 }} m {% else %} {%
+              widthratio attendance.distance_meters 1000 1 as km %} {{
+              km|floatformat:2 }} km {% endif %}
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- Hình ảnh khuôn mặt -->
+          {% if attendance.face_image %}
+          <img
+            src="{{ attendance.face_image.url }}"
+            class="rounded border shadow-sm mt-3"
+            style="max-width: 320px; aspect-ratio: 4/3; object-fit: cover"
+          />
+          {% endif %}
+
+          <!-- Nút -->
+          <div class="mt-4">
+            <a
+              href="{% url 'attendance:attendance_list' %}"
+              class="btn btn-primary px-4"
+            >
+              🔙 Về danh sách chấm công
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSS cho icon check thành công -->
+<style>
+  .success-checkmark {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 4px solid #28a745;
+    position: relative;
+    animation: pop 0.5s ease-in-out forwards;
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .check-icon {
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .icon-line {
+    height: 5px;
+    background-color: #28a745;
+    display: block;
+    border-radius: 2px;
+    position: absolute;
+  }
+  .line-tip {
+    width: 25px;
+    left: 14px;
+    top: 40px;
+    transform: rotate(45deg);
+    animation: lineTip 0.3s ease forwards 0.5s;
+  }
+  .line-long {
+    width: 47px;
+    right: 8px;
+    top: 32px;
+    transform: rotate(-45deg);
+    animation: lineLong 0.3s ease forwards 0.8s;
+  }
+  @keyframes lineTip {
+    from {
+      width: 0;
+    }
+    to {
+      width: 25px;
+    }
+  }
+  @keyframes lineLong {
+    from {
+      width: 0;
+    }
+    to {
+      width: 47px;
+    }
+  }
+  .icon-circle {
+    top: -4px;
+    left: -4px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid rgba(40, 167, 69, 0.3);
+    position: absolute;
+  }
+</style>
+{% endblock %}

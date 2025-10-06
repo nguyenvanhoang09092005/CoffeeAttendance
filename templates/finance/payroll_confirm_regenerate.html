@@ -1,0 +1,71 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Tạo lại chi tiết bảng lương</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
+            </li>
+            <li class="breadcrumb-item active">Tạo lại</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-sync text-warning" style="font-size: 4rem"></i>
+            <h4 class="mt-3">Xác nhận tạo lại chi tiết bảng lương</h4>
+            <p class="text-muted">
+              Hệ thống sẽ xóa toàn bộ chi tiết hiện tại và tạo lại từ dữ liệu
+              chấm công.
+            </p>
+
+            <div class="alert alert-warning text-left">
+              <strong><i class="fas fa-exclamation-triangle"></i> Lưu ý:</strong
+              ><br />
+              • Tất cả chi tiết bảng lương hiện tại sẽ bị xóa<br />
+              • Dữ liệu mới sẽ được lấy từ bảng chấm công trong kỳ lương<br />
+              • Tổng giờ và lương sẽ được tính toán lại tự động
+            </div>
+
+            <div class="alert alert-info text-left">
+              <strong>Thông tin bảng lương:</strong><br />
+              <strong>Nhân viên:</strong> {{ payroll.employee.first_name }} {{
+              payroll.employee.last_name }}<br />
+              <strong>Kỳ:</strong> {{ payroll.start_date|date:"d/m/Y" }} - {{
+              payroll.end_date|date:"d/m/Y" }}<br />
+              <strong>Tổng giờ hiện tại:</strong> {{ payroll.total_hours }}h
+            </div>
+
+            <form method="post">
+              {% csrf_token %}
+              <div class="mt-4">
+                <a
+                  href="{% url 'finance:payroll_detail' payroll.pk %}"
+                  class="btn btn-secondary mr-2"
+                >
+                  <i class="fas fa-times"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-warning">
+                  <i class="fas fa-sync"></i> Xác nhận tạo lại
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer><p>Bản quyền thuộc về Đá Cuội.</p></footer>
+</div>
+{% endblock %}

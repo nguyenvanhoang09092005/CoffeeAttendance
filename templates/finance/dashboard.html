@@ -1,0 +1,320 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Tổng quan tài chính</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Tài chính</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row">
+      <!-- Doanh thu -->
+      <div class="col-xl-3 col-sm-6 col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="dash-widget-header">
+              <span class="dash-widget-icon text-success border-success">
+                <i class="fas fa-arrow-up"></i>
+              </span>
+              <div class="dash-count">
+                <h3>{{ total_revenue|floatformat:0 }}</h3>
+              </div>
+            </div>
+            <div class="dash-widget-info">
+              <h6 class="text-muted">Tổng doanh thu</h6>
+              <div class="progress progress-sm">
+                <div class="progress-bar bg-success" style="width: 100%"></div>
+              </div>
+              <small class="text-muted"
+                >Tháng này: {{ revenue_this_month|floatformat:0 }} VND</small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chi phí -->
+      <div class="col-xl-3 col-sm-6 col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="dash-widget-header">
+              <span class="dash-widget-icon text-danger border-danger">
+                <i class="fas fa-arrow-down"></i>
+              </span>
+              <div class="dash-count">
+                <h3>{{ total_expense|floatformat:0 }}</h3>
+              </div>
+            </div>
+            <div class="dash-widget-info">
+              <h6 class="text-muted">Tổng chi phí</h6>
+              <div class="progress progress-sm">
+                <div class="progress-bar bg-danger" style="width: 100%"></div>
+              </div>
+              <small class="text-muted"
+                >Tháng này: {{ expense_this_month|floatformat:0 }} VND</small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lợi nhuận -->
+      <div class="col-xl-3 col-sm-6 col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="dash-widget-header">
+              <span
+                class="dash-widget-icon {% if profit >= 0 %}text-primary border-primary{% else %}text-danger border-danger{% endif %}"
+              >
+                <i class="fas fa-chart-line"></i>
+              </span>
+              <div class="dash-count">
+                <h3>{{ profit|floatformat:0 }}</h3>
+              </div>
+            </div>
+            <div class="dash-widget-info">
+              <h6 class="text-muted">Lợi nhuận</h6>
+              <div class="progress progress-sm">
+                <div
+                  class="progress-bar {% if profit >= 0 %}bg-primary{% else %}bg-danger{% endif %}"
+                  style="width: 100%"
+                ></div>
+              </div>
+              <small class="text-muted"
+                >Tháng này: {{ profit_this_month|floatformat:0 }} VND</small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng lương chờ duyệt -->
+      <div class="col-xl-3 col-sm-6 col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="dash-widget-header">
+              <span class="dash-widget-icon text-warning border-warning">
+                <i class="fas fa-clock"></i>
+              </span>
+              <div class="dash-count">
+                <h3>{{ pending_payrolls }}</h3>
+              </div>
+            </div>
+            <div class="dash-widget-info">
+              <h6 class="text-muted">BL chờ duyệt</h6>
+              <div class="progress progress-sm">
+                <div class="progress-bar bg-warning" style="width: 100%"></div>
+              </div>
+              <small class="text-muted">Cần xử lý</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dữ liệu gần đây -->
+    <div class="row">
+      <!-- Chi phí gần đây -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="card-title">Chi phí gần đây</h5>
+              </div>
+              <div class="col-auto">
+                <a
+                  href="{% url 'finance:expense_list' %}"
+                  class="btn btn-sm btn-outline-primary"
+                >
+                  Xem tất cả
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="activity">
+              {% for expense in recent_expenses %}
+              <div class="activity-box">
+                <div class="activity-list">
+                  <div class="activity-user">
+                    <span class="avatar avatar-xs">
+                      <i class="fas fa-minus-circle text-danger"></i>
+                    </span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="timeline-content">
+                      <a
+                        href="{% url 'finance:expense_detail' expense.pk %}"
+                        class="name"
+                      >
+                        {{ expense.category.name|default:"Khác" }}
+                      </a>
+                      <p class="text-muted">
+                        {{ expense.description|truncatewords:10 }}
+                      </p>
+                      <span class="time"
+                        >{{ expense.expense_date|date:"d/m/Y" }}</span
+                      >
+                    </div>
+                  </div>
+                  <div class="activity-time">
+                    <span class="badge badge-danger"
+                      >{{ expense.amount|floatformat:0 }} VND</span
+                    >
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-center text-muted">Chưa có chi phí nào</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doanh thu gần đây -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="card-title">Doanh thu gần đây</h5>
+              </div>
+              <div class="col-auto">
+                <a
+                  href="{% url 'finance:revenue_list' %}"
+                  class="btn btn-sm btn-outline-success"
+                >
+                  Xem tất cả
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="activity">
+              {% for revenue in recent_revenues %}
+              <div class="activity-box">
+                <div class="activity-list">
+                  <div class="activity-user">
+                    <span class="avatar avatar-xs">
+                      <i class="fas fa-plus-circle text-success"></i>
+                    </span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="timeline-content">
+                      <a
+                        href="{% url 'finance:revenue_detail' revenue.pk %}"
+                        class="name"
+                      >
+                        {{ revenue.source }}
+                      </a>
+                      <p class="text-muted">
+                        {{ revenue.description|truncatewords:10 }}
+                      </p>
+                      <span class="time"
+                        >{{ revenue.revenue_date|date:"d/m/Y" }}</span
+                      >
+                    </div>
+                  </div>
+                  <div class="activity-time">
+                    <span class="badge badge-success"
+                      >{{ revenue.amount|floatformat:0 }} VND</span
+                    >
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-center text-muted">Chưa có doanh thu nào</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng lương gần đây -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="card-title">Bảng lương gần đây</h5>
+              </div>
+              <div class="col-auto">
+                <a
+                  href="{% url 'finance:payroll_list' %}"
+                  class="btn btn-sm btn-outline-info"
+                >
+                  Xem tất cả
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="activity">
+              {% for payroll in recent_payrolls %}
+              <div class="activity-box">
+                <div class="activity-list">
+                  <div class="activity-user">
+                    <span class="avatar avatar-xs">
+                      <i class="fas fa-wallet text-primary"></i>
+                    </span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="timeline-content">
+                      <a
+                        href="{% url 'finance:payroll_detail' payroll.pk %}"
+                        class="name"
+                      >
+                        {{ payroll.employee.first_name }} {{
+                        payroll.employee.last_name }}
+                      </a>
+                      <p class="text-muted">
+                        {{ payroll.start_date|date:"d/m/Y" }} - {{
+                        payroll.end_date|date:"d/m/Y" }}
+                      </p>
+                      <span
+                        class="badge {% if payroll.status == 'draft' %}badge-secondary {% elif payroll.status == 'pending' %}badge-warning {% elif payroll.status == 'approved' %}badge-info {% elif payroll.status == 'paid' %}badge-success {% else %}badge-danger{% endif %}"
+                      >
+                        {{ payroll.get_status_display }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="activity-time">
+                    <span class="badge badge-primary"
+                      >{{ payroll.net_salary|floatformat:0 }} VND</span
+                    >
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p class="text-center text-muted">Chưa có bảng lương nào</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

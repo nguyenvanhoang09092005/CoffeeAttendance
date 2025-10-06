@@ -4,6 +4,9 @@ from .models import *
 from django.contrib import messages
 from .utils import create_notification
 
+from django.http import JsonResponse
+from .models import Employee, EmployeeFace
+from .services.face_utils import generate_face_encoding
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -153,3 +156,45 @@ def delete_employee(request, slug):
         create_notification(request.user, f"Deleted Employee: {employee_name}")
         return redirect('employee_list')
     return HttpResponseForbidden()
+
+
+# ==============================
+# Đăng ký khuôn mặt
+# ==============================
+def register_face(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+
+    if request.method == "POST" and request.FILES.get("face_image"):
+        image_file = request.FILES["face_image"]
+
+        # Kiểm tra nếu nhân viên đã có dữ liệu khuôn mặt
+        existing_faces = employee.faces.all()
+        if existing_faces.exists():
+            # Nếu chưa confirm thì trả về cảnh báo
+            if not request.POST.get("confirm_replace"):
+                return JsonResponse({
+                    "success": False,
+                    "need_confirm": True,
+                    "message": "Nhân viên này đã có dữ liệu khuôn mặt. Bạn có muốn thay đổi không?"
+                })
+
+            # Nếu confirm thì xóa dữ liệu cũ
+            existing_faces.delete()
+
+        # Tạo bản ghi mới
+        face = EmployeeFace.objects.create(employee=employee, face_image=image_file)
+        encoding = generate_face_encoding(face.face_image.path)
+
+        if encoding:
+            face.face_encoding = encoding
+            face.save()
+            return JsonResponse({"success": True, "message": "Đăng ký khuôn mặt thành công"})
+        else:
+            face.delete()
+            return JsonResponse({
+                "success": False,
+                "message": "Không nhận diện được khuôn mặt. Vui lòng chụp lại với ánh sáng rõ hơn."
+            })
+
+    # GET -> render giao diện
+    return render(request, "employees/face-register.html", {"employee": employee})

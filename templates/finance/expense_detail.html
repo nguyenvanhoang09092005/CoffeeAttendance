@@ -1,0 +1,191 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chi tiết chi phí</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:expense_list' %}">Chi phí</a>
+            </li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          {% if expense.status == 'pending' %}
+          <a
+            href="{% url 'finance:expense_update' expense.pk %}"
+            class="btn btn-warning mr-2"
+          >
+            <i class="fas fa-pen"></i> Sửa
+          </a>
+          {% endif %}
+          <a href="{% url 'finance:expense_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="row align-items-center">
+              <div class="col">
+                <h4 class="card-title mb-0">Thông tin chi phí</h4>
+              </div>
+              <div class="col-auto">
+                {% if expense.status == 'pending' %}
+                <span class="badge badge-warning">Chờ duyệt</span>
+                {% elif expense.status == 'approved' %}
+                <span class="badge badge-success">Đã duyệt</span>
+                {% else %}
+                <span class="badge badge-danger">Từ chối</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <!-- Loại chi phí -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Loại chi phí</label>
+                  <p>
+                    {% if expense.category %}
+                    <span class="badge badge-secondary"
+                      >{{ expense.category.name }}</span
+                    >
+                    {% else %}
+                    <span class="text-muted">Khác</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Số tiền -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Số tiền</label>
+                  <p>
+                    <strong class="text-danger" style="font-size: 1.5rem"
+                      >{{ expense.amount|floatformat:0 }} VND</strong
+                    >
+                  </p>
+                </div>
+              </div>
+
+              <!-- Mô tả -->
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="text-muted">Mô tả</label>
+                  <p>{{ expense.description }}</p>
+                </div>
+              </div>
+
+              <!-- Ngày chi -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Ngày chi</label>
+                  <p>{{ expense.expense_date|date:"d/m/Y" }}</p>
+                </div>
+              </div>
+
+              <!-- Người tạo -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Người tạo</label>
+                  <p>
+                    {% if expense.created_by %} {{ expense.created_by.first_name
+                    }} {{ expense.created_by.last_name }} {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Người phê duyệt -->
+              {% if expense.approved_by %}
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Người phê duyệt</label>
+                  <p>
+                    {{ expense.approved_by.first_name }} {{
+                    expense.approved_by.last_name }}
+                  </p>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Hóa đơn/Chứng từ -->
+              {% if expense.receipt_image %}
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="text-muted">Hóa đơn/Chứng từ</label>
+                  <div>
+                    <a href="{{ expense.receipt_image.url }}" target="_blank">
+                      <img
+                        src="{{ expense.receipt_image.url }}"
+                        alt="Receipt"
+                        class="img-fluid"
+                        style="
+                          max-width: 300px;
+                          border: 1px solid #ddd;
+                          border-radius: 5px;
+                        "
+                      />
+                    </a>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Ghi chú -->
+              {% if expense.note %}
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="text-muted">Ghi chú</label>
+                  <p>{{ expense.note }}</p>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Thời gian -->
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Ngày tạo</label>
+                  <p>{{ expense.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="text-muted">Cập nhật lần cuối</label>
+                  <p>{{ expense.updated_at|date:"d/m/Y H:i" }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

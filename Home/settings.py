@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-SITE_URL = "https://755e513be2f4.ngrok-free.app"
+SITE_URL = "https://19b24fe774c6.ngrok-free.app "
 
 
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'home_auth',
     'Shift',
     'Attendance',
+    'finance',
 
 ]
 

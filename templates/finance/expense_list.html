@@ -1,0 +1,166 @@
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Danh sách chi phí</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item active">Chi phí</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2">
+            <i class="fas fa-download"></i> Download
+          </a>
+          <a href="{% url 'finance:expense_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm chi phí
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="get" class="row">
+              <div class="col-md-3">{{ filter_form.category }}</div>
+              <div class="col-md-2">{{ filter_form.status }}</div>
+              <div class="col-md-3">{{ filter_form.start_date }}</div>
+              <div class="col-md-3">{{ filter_form.end_date }}</div>
+              <div class="col-md-1">
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fas fa-filter"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Amount -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="alert alert-info">
+          <strong><i class="fas fa-calculator"></i> Tổng chi phí:</strong> {{
+          total_amount|floatformat:0 }} VND
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">Ngày</th>
+                    <th class="text-center">Loại chi phí</th>
+                    <th class="text-center">Mô tả</th>
+                    <th class="text-center">Số tiền</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Người tạo</th>
+                    <th class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for expense in expenses %}
+                  <tr>
+                    <td class="text-center">
+                      {{ expense.expense_date|date:"d/m/Y" }}
+                    </td>
+                    <td class="text-center">
+                      {% if expense.category %}
+                      <span class="badge badge-secondary"
+                        >{{ expense.category.name }}</span
+                      >
+                      {% else %}
+                      <span class="text-muted">Khác</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {{ expense.description|truncatewords:15 }}
+                    </td>
+                    <td class="text-center">
+                      <strong class="text-danger"
+                        >{{ expense.amount|floatformat:0 }} VND</strong
+                      >
+                    </td>
+                    <td class="text-center">
+                      {% if expense.status == 'pending' %}
+                      <span class="badge badge-warning">Chờ duyệt</span>
+                      {% elif expense.status == 'approved' %}
+                      <span class="badge badge-success">Đã duyệt</span>
+                      {% else %}
+                      <span class="badge badge-danger">Từ chối</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% if expense.created_by %} {{
+                      expense.created_by.first_name }} {{
+                      expense.created_by.last_name }} {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <div class="actions">
+                        <a
+                          href="{% url 'finance:expense_detail' expense.pk %}"
+                          class="btn btn-sm bg-info-light mr-2"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        <a
+                          href="{% url 'finance:expense_update' expense.pk %}"
+                          class="btn btn-sm bg-success-light mr-2"
+                        >
+                          <i class="fas fa-pen"></i>
+                        </a>
+                        <a
+                          href="{% url 'finance:expense_delete' expense.pk %}"
+                          class="btn btn-sm bg-danger-light"
+                          onclick="return confirm('Bạn có chắc muốn xóa chi phí này?');"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">
+                      Chưa có chi phí nào
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}
