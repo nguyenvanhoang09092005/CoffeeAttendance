@@ -1,0 +1,266 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Tiêu đề trang -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Chi tiết danh mục: {{ category.name }}</h3>
+          <ul class="breadcrumb">
+            {% comment %} <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li> {% endcomment %}
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:expense_category_list' %}">Danh mục chi phí</a>
+            </li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+          </ul>
+        </div>
+        <div class="col-auto">
+          <a href="{% url 'finance:expense_category_update' category.pk %}" class="btn btn-primary">
+            <i class="fas fa-pen me-2"></i>Chỉnh sửa
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thông tin danh mục -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">
+                <h5 class="form-title"><span>Thông tin danh mục</span></h5>
+              </div>
+              
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Tên danh mục</label>
+                  <div class="fw-bold">{{ category.name }}</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Trạng thái</label>
+                  <div>
+                    {% if category.is_active %}
+                      <span class="badge bg-success">Đang sử dụng</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Tạm ngưng</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="text-muted">Mô tả</label>
+                  <div>{{ category.description|default:"-" }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Thống kê -->
+<div class="row mt-3 g-3">
+  <div class="col-6 col-lg-3">
+    <div class="card card-table h-100 shadow-sm ">
+      <div class="card-body text-center p-3">
+        <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
+        <h3 class="mb-2 fw-bold">{{ total_expenses }}</h3>
+        <p class="text-muted mb-0">Tổng chi phí</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="card card-table h-100 shadow-sm ">
+      <div class="card-body text-center p-3">
+        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+        <h3 class="mb-2 fw-bold">{{ pending_expenses }}</h3>
+        <p class="text-muted mb-2">Chờ duyệt</p>
+        <span class="badge bg-warning text-dark fs-6">{{ total_pending_amount|floatformat:0 }} VND</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="card card-table h-100 shadow-sm ">
+      <div class="card-body text-center p-3">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h3 class="mb-2 fw-bold">{{ approved_expenses }}</h3>
+        <p class="text-muted mb-2">Đã duyệt</p>
+        <span class="badge bg-success fs-6">{{ total_approved_amount|floatformat:0 }} VND</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-lg-3">
+    <div class="card card-table h-100 shadow-sm ">
+      <div class="card-body text-center p-3">
+        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+        <h3 class="mb-2 fw-bold">{{ rejected_expenses }}</h3>
+        <p class="text-muted mb-0">Đã từ chối</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Bộ lọc -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="btn-group w-100" role="group">
+              <a href="?status=all" 
+                 class="btn {% if status_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-list me-2"></i>Tất cả ({{ total_expenses }})
+              </a>
+              <a href="?status=pending" 
+                 class="btn {% if status_filter == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                <i class="fas fa-clock me-2"></i>Chờ duyệt ({{ pending_expenses }})
+              </a>
+              <a href="?status=approved" 
+                 class="btn {% if status_filter == 'approved' %}btn-success{% else %}btn-outline-success{% endif %}">
+                <i class="fas fa-check me-2"></i>Đã duyệt ({{ approved_expenses }})
+              </a>
+              <a href="?status=rejected" 
+                 class="btn {% if status_filter == 'rejected' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                <i class="fas fa-times me-2"></i>Đã từ chối ({{ rejected_expenses }})
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách chi phí -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th width="5%" class="text-center">#</th>
+                    <th width="20%">Mô tả</th>
+                    <th width="12%" class="text-center">Số tiền</th>
+                    <th width="10%" class="text-center">Ngày chi</th>
+                    <th width="15%">Người tạo</th>
+                    <th width="10%" class="text-center">Trạng thái</th>
+                    <th width="15%">Người duyệt</th>
+                    <th width="13%" class="text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for expense in expenses %}
+                  <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td>
+                      <strong>{{ expense.description }}</strong>
+                      {% if expense.note %}
+                        <br><small class="text-muted">{{ expense.note|truncatewords:10 }}</small>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <strong>{{ expense.amount|floatformat:0 }} VND</strong>
+                    </td>
+                    <td class="text-center">{{ expense.expense_date|date:"d/m/Y" }}</td>
+                    <td>
+                      {% if expense.created_by %}
+                        {% if expense.created_by.first_name and expense.created_by.last_name %}
+                          {{ expense.created_by.first_name }} {{ expense.created_by.last_name }}
+                        {% elif expense.created_by.first_name %}
+                          {{ expense.created_by.first_name }}
+                        {% else %}
+                          {{ expense.created_by.username }}
+                        {% endif %}
+                        <br><small class="text-muted">{{ expense.created_at|date:"d/m/Y H:i" }}</small>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% if expense.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                      {% elif expense.status == 'approved' %}
+                        <span class="badge bg-success">Đã duyệt</span>
+                      {% elif expense.status == 'rejected' %}
+                        <span class="badge bg-danger">Đã từ chối</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if expense.approved_by %}
+                        {% if expense.approved_by.first_name and expense.approved_by.last_name %}
+                          {{ expense.approved_by.first_name }} {{ expense.approved_by.last_name }}
+                        {% elif expense.approved_by.first_name %}
+                          {{ expense.approved_by.first_name }}
+                        {% else %}
+                          {{ expense.approved_by.username }}
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <div class="actions">
+                        <a href="{% url 'finance:expense_detail' expense.pk %}" 
+                           class="btn btn-sm bg-info-light me-1"
+                           title="Chi tiết">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        {% if expense.status == 'pending' %}
+                          <a href="{% url 'finance:expense_approve' expense.pk %}?from_category={{ category.pk }}" 
+                             class="btn btn-sm bg-success-light me-1"
+                             title="Phê duyệt">
+                            <i class="fas fa-check"></i>
+                          </a>
+                          <a href="{% url 'finance:expense_reject' expense.pk %}?from_category={{ category.pk }}" 
+                             class="btn btn-sm bg-danger-light"
+                             title="Từ chối">
+                            <i class="fas fa-times"></i>
+                          </a>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                      Chưa có chi phí nào trong danh mục này.
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

@@ -7,7 +7,7 @@
     <div class="page-header">
       <div class="row align-items-center">
         <div class="col">
-          <h3 class="page-title">Xóa chi phí</h3>
+          <h3 class="page-title">Xóa danh mục chi phí</h3>
           <ul class="breadcrumb">
             <li class="breadcrumb-item">
               <a href="{% url 'admin_dashboard' %}">Dashboard</a>
@@ -16,7 +16,7 @@
               <a href="{% url 'finance:dashboard' %}">Tài chính</a>
             </li>
             <li class="breadcrumb-item">
-              <a href="{% url 'finance:expense_list' %}">Chi phí</a>
+              <a href="{% url 'finance:expense_category_list' %}">Danh mục chi phí</a>
             </li>
             <li class="breadcrumb-item active">Xóa</li>
           </ul>
@@ -31,43 +31,25 @@
         <div class="card">
           <div class="card-body text-center py-4">
             <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem"></i>
-            <h4 class="mt-3 mb-2">Xác nhận xóa chi phí</h4>
+            <h4 class="mt-3 mb-2">Xác nhận xóa danh mục chi phí</h4>
             <p class="text-muted mb-0">
-              Bạn có chắc chắn muốn xóa chi phí này không?
+              Bạn có chắc chắn muốn xóa danh mục này không?
             </p>
           </div>
         </div>
 
-        <!-- Thông tin chi phí -->
+        <!-- Thông tin danh mục -->
         <div class="card mt-3">
           <div class="card-body">
             <div class="row">
               <div class="col-12">
-                <h5 class="form-title"><span>Thông tin chi phí</span></h5>
+                <h5 class="form-title"><span>Thông tin danh mục</span></h5>
               </div>
 
               <div class="col-12 col-sm-6">
                 <div class="form-group">
-                  <label class="text-muted">Loại chi phí</label>
-                  <div class="fw-bold text-secondary">
-                    {{ expense.category.name|default:"Khác" }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-6">
-                <div class="form-group">
-                  <label class="text-muted">Số tiền</label>
-                  <div class="fw-bold text-danger">
-                    {{ expense.amount|floatformat:0 }} VND
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-6">
-                <div class="form-group">
-                  <label class="text-muted">Ngày chi</label>
-                  <div>{{ expense.expense_date|date:"d/m/Y" }}</div>
+                  <label class="text-muted">Tên danh mục</label>
+                  <div class="fw-bold text-danger">{{ category.name }}</div>
                 </div>
               </div>
 
@@ -75,46 +57,54 @@
                 <div class="form-group">
                   <label class="text-muted">Trạng thái</label>
                   <div>
-                    {% if expense.status == 'approved' %}
-                      <span class="badge bg-success">Đã duyệt</span>
-                    {% elif expense.status == 'pending' %}
-                      <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                    {% if category.is_active %}
+                      <span class="badge bg-success">Đang sử dụng</span>
                     {% else %}
-                      <span class="badge bg-danger">Từ chối</span>
+                      <span class="badge bg-secondary">Tạm ngưng</span>
                     {% endif %}
                   </div>
                 </div>
               </div>
 
-              <div class="col-12">
+              <div class="col-12 col-sm-6">
                 <div class="form-group">
                   <label class="text-muted">Mô tả</label>
-                  <div>{{ expense.description|default:"-" }}</div>
+                  <div>{{ category.description|default:"-" }}</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Số chi phí liên quan</label>
+                  <div>
+                    <span class="badge bg-info">{{ category.expenses.count }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Không thể xóa nếu đã duyệt -->
-        {% if expense.status == 'approved' %}
+        <!-- Cảnh báo không thể xóa -->
+        {% if category.expenses.count > 0 %}
         <div class="card mt-3 border-danger">
           <div class="card-body">
             <div class="alert alert-danger mb-0">
               <div class="d-flex align-items-start">
                 <i class="fas fa-ban me-3 mt-1" style="font-size: 1.5rem;"></i>
                 <div>
-                  <h5 class="alert-heading mb-2">Không thể xóa chi phí này!</h5>
+                  <h5 class="alert-heading mb-2">Không thể xóa danh mục này!</h5>
                   <p class="mb-0">
-                    Chi phí <strong>"{{ expense.description|truncatechars:40 }}"</strong> đã được <strong>phê duyệt</strong>.  
-                    Vui lòng liên hệ người quản lý nếu muốn thực hiện thay đổi hoặc hủy bỏ chi phí này.
+                    Danh mục <strong>"{{ category.name }}"</strong> đang được sử dụng bởi 
+                    <strong>{{ category.expenses.count }}</strong> chi phí. 
+                    Vui lòng xóa hoặc chuyển các chi phí sang danh mục khác trước khi xóa danh mục này.
                   </p>
                 </div>
               </div>
             </div>
 
             <div class="text-center mt-3">
-              <a href="{% url 'finance:expense_list' %}" class="btn btn-secondary">
+              <a href="{% url 'finance:expense_category_list' %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Quay lại
               </a>
             </div>
@@ -131,9 +121,9 @@
                 <div>
                   <h6 class="alert-heading mb-2">Lưu ý quan trọng:</h6>
                   <ul class="mb-0 ps-3">
-                    <li>Sau khi xóa, chi phí này sẽ bị xóa vĩnh viễn khỏi hệ thống.</li>
+                    <li>Sau khi xóa, danh mục này sẽ bị xóa vĩnh viễn khỏi hệ thống.</li>
                     <li>Hành động này không thể hoàn tác.</li>
-                    <li>Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.</li>
+                    <li>Vui lòng kiểm tra kỹ trước khi xác nhận.</li>
                   </ul>
                 </div>
               </div>
@@ -143,7 +133,7 @@
               {% csrf_token %}
               <div class="row">
                 <div class="col-12 text-right">
-                  <a href="{% url 'finance:expense_list' %}" class="btn btn-secondary">
+                  <a href="{% url 'finance:expense_category_list' %}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Hủy
                   </a>
                   <button type="submit" class="btn btn-danger">

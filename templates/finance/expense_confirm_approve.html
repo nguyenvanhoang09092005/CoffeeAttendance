@@ -1,0 +1,151 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Tiêu đề trang -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Phê duyệt chi phí</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:expense_list' %}">Chi phí</a>
+            </li>
+            <li class="breadcrumb-item active">Phê duyệt</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nội dung -->
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- Icon xác nhận -->
+        <div class="card">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-check-circle text-success" style="font-size: 4rem"></i>
+            <h4 class="mt-3 mb-2">Xác nhận phê duyệt chi phí</h4>
+            <p class="text-muted mb-0">
+              Sau khi phê duyệt, chi phí này sẽ được ghi nhận vào hệ thống.
+            </p>
+          </div>
+        </div>
+
+        <!-- Thông tin chi phí -->
+        <div class="card mt-3">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">
+                <h5 class="form-title"><span>Thông tin chi phí</span></h5>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Danh mục</label>
+                  <div class="fw-bold">{{ expense.category.name|default:"-" }}</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Ngày chi</label>
+                  <div>{{ expense.expense_date|date:"d/m/Y" }}</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Mô tả</label>
+                  <div>{{ expense.description }}</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Số tiền</label>
+                  <div class="fw-bold text-success" style="font-size: 1.2rem;">
+                    {{ expense.amount|floatformat:0 }} VND
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Người tạo</label>
+                  <div>
+                    {% if expense.created_by %}
+                      {{ expense.created_by.first_name }} {{ expense.created_by.last_name }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="text-muted">Trạng thái</label>
+                  <div>
+                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                  </div>
+                </div>
+              </div>
+
+              {% if expense.note %}
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="text-muted">Ghi chú</label>
+                  <div>{{ expense.note }}</div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Form xác nhận -->
+        <div class="card mt-3">
+          <div class="card-body">
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Lưu ý:</strong> Sau khi phê duyệt, chi phí này sẽ được tính vào tổng chi phí của hệ thống.
+            </div>
+
+            <form method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-12 text-right">
+                  <a href="{% url 'finance:expense_detail' expense.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                  </a>
+                  <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Xác nhận phê duyệt
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

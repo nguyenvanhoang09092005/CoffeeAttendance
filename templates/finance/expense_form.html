@@ -1,4 +1,38 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+
+{% block body %}
+
+<style>
+  form select,
+  form input[type="date"],
+  form input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 4px rgba(255, 193, 7, 0.4);
+  }
+
+  .btn-warning {
+    background-color: #b7791f;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-warning:hover {
+    background-color: #d69e2e;
+    transform: scale(1.1);
+  }
+</style>
+
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -23,88 +57,75 @@
       </div>
     </div>
 
-    <!-- Form -->
+    <!-- Form content -->
     <div class="row">
-      <div class="col-md-8 offset-md-2">
+      <div class="col-sm-12">
         <div class="card">
-          <div class="card-header">
-            <h4 class="card-title mb-0">Thông tin chi phí</h4>
-          </div>
           <div class="card-body">
             <form method="post" enctype="multipart/form-data">
               {% csrf_token %}
-
               <div class="row">
+                <!-- Thông tin chung -->
+                <div class="col-12">
+                  <h5 class="form-title"><span>Thông tin chi phí</span></h5>
+                </div>
+
                 <!-- Loại chi phí -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label>{{ form.category.label }}</label>
-                    {{ form.category }} {% if form.category.errors %}
-                    <div class="text-danger small">
-                      {{ form.category.errors }}
-                    </div>
+                    <label>{{ form.category.label }} <span class="text-danger">*</span></label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                    <div class="text-danger small">{{ form.category.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Số tiền -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label
-                      >{{ form.amount.label }}
-                      <span class="text-danger">*</span></label
-                    >
-                    {{ form.amount }} {% if form.amount.errors %}
-                    <div class="text-danger small">
-                      {{ form.amount.errors }}
-                    </div>
+                    <label>{{ form.amount.label }} <span class="text-danger">*</span></label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                    <div class="text-danger small">{{ form.amount.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Mô tả -->
-                <div class="col-md-12">
+                <div class="col-12">
                   <div class="form-group">
-                    <label
-                      >{{ form.description.label }}
-                      <span class="text-danger">*</span></label
-                    >
-                    {{ form.description }} {% if form.description.errors %}
-                    <div class="text-danger small">
-                      {{ form.description.errors }}
-                    </div>
+                    <label>{{ form.description.label }} <span class="text-danger">*</span></label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small">{{ form.description.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Ngày chi -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label>{{ form.expense_date.label }}</label>
-                    {{ form.expense_date }} {% if form.expense_date.errors %}
-                    <div class="text-danger small">
-                      {{ form.expense_date.errors }}
-                    </div>
+                    <label>{{ form.expense_date.label }} <span class="text-danger">*</span></label>
+                    {{ form.expense_date }}
+                    {% if form.expense_date.errors %}
+                    <div class="text-danger small">{{ form.expense_date.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Hóa đơn/Chứng từ -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
                     <label>{{ form.receipt_image.label }}</label>
-                    {{ form.receipt_image }} {% if form.receipt_image.errors %}
-                    <div class="text-danger small">
-                      {{ form.receipt_image.errors }}
-                    </div>
-                    {% endif %} {% if expense and expense.receipt_image %}
+                    {{ form.receipt_image }}
+                    {% if form.receipt_image.errors %}
+                    <div class="text-danger small">{{ form.receipt_image.errors }}</div>
+                    {% endif %}
+                    {% if expense and expense.receipt_image %}
                     <div class="mt-2">
-                      <small class="text-muted">Hóa đơn hiện tại: </small>
-                      <a
-                        href="{{ expense.receipt_image.url }}"
-                        target="_blank"
-                        class="btn btn-sm btn-outline-info"
-                      >
+                      <small class="text-muted">Hóa đơn hiện tại:</small>
+                      <a href="{{ expense.receipt_image.url }}" target="_blank" class="btn btn-sm btn-outline-info">
                         <i class="fas fa-eye"></i> Xem
                       </a>
                     </div>
@@ -113,26 +134,37 @@
                 </div>
 
                 <!-- Ghi chú -->
-                <div class="col-md-12">
+                <div class="col-12">
+                  <h5 class="form-title"><span>Ghi chú & thông tin bổ sung</span></h5>
+                </div>
+
+                <div class="col-12">
                   <div class="form-group">
                     <label>{{ form.note.label }}</label>
-                    {{ form.note }} {% if form.note.errors %}
+                    {{ form.note }}
+                    {% if form.note.errors %}
                     <div class="text-danger small">{{ form.note.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
-              </div>
 
-              <div class="text-right">
-                <a
-                  href="{% url 'finance:expense_list' %}"
-                  class="btn btn-secondary"
-                >
-                  <i class="fas fa-times"></i> Hủy
-                </a>
-                <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-check"></i> Lưu
-                </button>
+                <!-- Thông báo -->
+                <div class="col-12">
+                  <div class="alert alert-info mt-2">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Lưu ý:</strong> Vui lòng nhập đầy đủ thông tin và đính kèm hóa đơn (nếu có).
+                  </div>
+                </div>
+
+                <!-- Nút -->
+                <div class="col-12 text-right">
+                  <a href="{% url 'finance:expense_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Lưu chi phí
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -146,6 +178,7 @@
   </footer>
 </div>
 
+<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>

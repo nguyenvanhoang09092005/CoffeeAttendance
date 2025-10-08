@@ -8,11 +8,19 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
 
     # ======= CHI PHÍ (Expense) =======
+    path('expense-categories/', views.expense_category_list, name='expense_category_list'),
+    path('expense-categories/create/', views.expense_category_create, name='expense_category_create'),
+     path('expense-categories/<int:pk>/', views.expense_category_detail, name='expense_category_detail'), 
+    path('expense-categories/<int:pk>/update/', views.expense_category_update, name='expense_category_update'),
+    path('expense-categories/<int:pk>/delete/', views.expense_category_delete, name='expense_category_delete'),
     path("expenses/", views.expense_list, name="expense_list"),
     path("expenses/new/", views.expense_create, name="expense_create"),
     path("expenses/<int:pk>/", views.expense_detail, name="expense_detail"),
     path("expenses/<int:pk>/edit/", views.expense_update, name="expense_update"),
     path("expenses/<int:pk>/delete/", views.expense_delete, name="expense_delete"),
+    path("expenses/<int:pk>/approve/", views.expense_approve, name="expense_approve"),  
+    path("expenses/<int:pk>/reject/", views.expense_reject, name="expense_reject"), 
+    
 
     # ======= DOANH THU (Revenue) =======
     path("revenues/", views.revenue_list, name="revenue_list"),

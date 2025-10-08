@@ -440,25 +440,93 @@
                 </ul>
               </li>
 
-              <!-- Lương & Chi phí -->
-              <li class="submenu">
-                <a href="#">
-                  <i class="fas fa-file-invoice-dollar"></i>
-                  <span>Lương & Chi phí</span>
-                  <span class="menu-arrow"></span>
-                </a>
-                <ul>
-                  <li>
-                    <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
-                  </li>
-                  <li>
-                    <a href="{% url 'finance:expense_list' %}">Chi phí quán</a>
-                  </li>
-                  <li>
-                    <a href="{% url 'finance:revenue_list' %}">Doanh thu</a>
-                  </li>
-                </ul>
-              </li>
+           <!-- Lương & Chi phí -->
+<li class="submenu">
+<a href="javascript:void(0);">
+    <i class="fas fa-file-invoice-dollar"></i>
+    <span>Lương & Chi phí</span>
+    <span class="menu-arrow"></span>
+  </a>
+  <ul>
+    <!-- Bảng lương -->
+    <li class="submenu">
+      <a href="javascript:void(0);">
+        <i class="fas fa-money-check-alt"></i>
+        <span>Bảng lương</span>
+        <span class="menu-arrow"></span>
+      </a>
+      <ul>
+        <li><a href="{% url 'finance:payroll_list' %}">Danh sách bảng lương</a></li>
+        <li><a href="{% url 'finance:payroll_create' %}">Tạo bảng lương mới</a></li>
+        
+      </ul>
+    </li>
+
+   <!-- Chi phí -->
+<li class="submenu">
+ <a href="javascript:void(0);">
+    <i class="fas fa-wallet"></i>
+    <span>Chi phí quán</span>
+    <span class="menu-arrow"></span>
+  </a>
+  <ul>
+    <!-- Danh mục chi phí -->
+    <li class="submenu">
+     <a href="javascript:void(0);">
+         <i class="fas fa-clipboard-list"></i>
+        <span>Danh mục chi phí</span>
+        <span class="menu-arrow"></span>
+      </a>
+      <ul>
+        <li>
+          <a href="{% url 'finance:expense_category_list' %}">Các mục chi phí</a>
+        </li>
+        <li>
+          <a href="{% url 'finance:expense_category_create' %}">Tạo mục chi phí mới</a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Loại chi phí -->
+    <li>
+      <a href="{% url 'finance:expense_list' %}">
+        <i class="fas fa-list"></i>
+        <span>Các loại chi phí</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'finance:expense_create' %}">
+        <i class="fas fa-plus-circle"></i>
+        <span>Tạo chi phí mới</span>
+      </a>
+    </li>
+  </ul>
+</li>
+
+
+    <!-- Doanh thu -->
+   
+    <li class="submenu">
+      <a href="javascript:void(0);">
+        <i class="fas fa-money-check-alt"></i>
+        <span>Doanh thu</span>
+        <span class="menu-arrow"></span>
+      </a>
+      <ul>
+        <li><a href="{% url 'finance:revenue_list' %}">Bảng doanh thu</a></li>
+        <li><a href="{% url 'finance:revenue_create' %}">Nhập doanh thu</a></li>
+      </ul>
+    </li>
+
+     <!-- Thống kê -->
+   <li> 
+  <a href="{% url 'finance:dashboard' %}"> 
+    <i class="fas fa-tachometer-alt"></i> <span>Thống kê</span> 
+  </a> 
+</li>
+  </ul>
+</li>
+
               <!-- Kho & Nguyên liệu -->
               <li class="submenu">
                 <a href="#">

@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-SITE_URL = "https://19b24fe774c6.ngrok-free.app "
+SITE_URL = "https://5494dcde16c1.ngrok-free.app "
 
 
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'cloudinary',
     'cloudinary_storage',
     'coffeecheckin',

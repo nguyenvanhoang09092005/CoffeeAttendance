@@ -39,10 +39,10 @@
 
             <div class="alert alert-info text-left">
               <strong>Thông tin bảng lương:</strong><br />
-              <strong>Nhân viên:</strong> {{ payroll.employee.first_name }} {{
-              payroll.employee.last_name }}<br />
-              <strong>Kỳ:</strong> {{ payroll.start_date|date:"d/m/Y" }} - {{
-              payroll.end_date|date:"d/m/Y" }}<br />
+             <strong>Nhân viên:</strong> {{ payroll.employee.last_name }} {{ payroll.employee.first_name }}<br />
+
+            <strong>Kỳ:</strong> {{ payroll.start_date|date:"d/m/Y" }}  - {{ payroll.end_date|date:"d/m/Y" }}<br />
+
               <strong>Tổng giờ hiện tại:</strong> {{ payroll.total_hours }}h
             </div>
 

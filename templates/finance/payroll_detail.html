@@ -64,6 +64,21 @@
                 <tr><th>Nhân viên:</th><td><strong>{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}</strong></td></tr>
                 <tr><th>Mã NV:</th><td>{{ payroll.employee.employee_id }}</td></tr>
                 <tr><th>Chức vụ:</th><td>{{ payroll.employee.get_position_display }}</td></tr>
+                 <tr>
+  <th>Người tạo:</th>
+  <td>
+    {% if payroll.created_by %}
+      {% if payroll.created_by.first_name or payroll.created_by.last_name %}
+        {{ payroll.created_by.first_name }} {{ payroll.created_by.last_name }}
+      {% else %}
+        {{ payroll.created_by.username }}
+      {% endif %}
+    {% else %}
+      <span class="text-muted">-</span>
+    {% endif %}
+  </td>
+</tr>
+                  <tr><th>Ngày lập:</th><td>{{ payroll.created_at|date:"d/m/Y H:i" }}</td></tr>
               </table>
             </div>
           </div>
@@ -74,7 +89,20 @@
                   <th class="w-40">Kỳ lương:</th>
                   <td>{{ payroll.start_date|date:"d/m/Y" }} - {{ payroll.end_date|date:"d/m/Y" }}</td>
                 </tr>
-                <tr><th>Ngày lập:</th><td>{{ payroll.created_at|date:"d/m/Y H:i" }}</td></tr>
+                <tr>
+  <th>Người duyệt:</th>
+  <td>
+    {% if payroll.approved_by %}
+      {% if payroll.approved_by.first_name or payroll.approved_by.last_name %}
+        {{ payroll.approved_by.first_name }} {{ payroll.approved_by.last_name }}
+      {% else %}
+        {{ payroll.approved_by.username }}
+      {% endif %}
+    {% else %}
+      <span class="text-muted">-</span>
+    {% endif %}
+  </td>
+</tr>
                 {% if payroll.approved_by %}
                 <tr><th>Ngày duyệt:</th><td>{{ payroll.approved_at|date:"d/m/Y H:i" }}</td></tr>
                 {% endif %}

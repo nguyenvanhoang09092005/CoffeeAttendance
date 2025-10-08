@@ -1,0 +1,135 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <!-- Tiêu đề trang -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">
+            {% if category %}Sửa danh mục chi phí{% else %}Tạo danh mục chi phí mới{% endif %}
+          </h3>
+          <ul class="breadcrumb">
+            {% comment %} <li class="breadcrumb-item">
+              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            </li> {% endcomment %}
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:expense_category_list' %}">Danh mục chi phí</a>
+            </li>
+            <li class="breadcrumb-item active">
+              {% if category %}Sửa{% else %}Tạo mới{% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form content -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="row">
+                <!-- Thông tin danh mục -->
+                <div class="col-12">
+                  <h5 class="form-title"><span>Thông tin danh mục</span></h5>
+                </div>
+
+                <!-- Tên danh mục -->
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Tên danh mục <span class="text-danger">*</span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ form.name.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">
+                      Ví dụ: Tiền mặt bằng, Tiền điện, Tiền nước...
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Trạng thái -->
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>Trạng thái</label>
+                    <div class="mt-2">
+                      <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                          Đang sử dụng
+                        </label>
+                      </div>
+                      <small class="form-text text-muted">
+                        Nếu tắt, danh mục này sẽ không hiển thị khi tạo chi phí mới
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="col-12">
+                  <div class="form-group">
+                    <label>Mô tả</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ form.description.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">
+                      Mô tả chi tiết về danh mục chi phí này
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Gợi ý (chỉ hiển thị khi tạo mới) -->
+                {% if not category %}
+                <div class="col-12">
+                  <div class="alert alert-info mt-2">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Gợi ý danh mục:</strong> Tiền mặt bằng, Tiền điện, Tiền nước, Internet/Điện thoại, Văn phòng phẩm, Xăng xe, Sửa chữa/Bảo trì, Vệ sinh, Đào tạo, Phúc lợi nhân viên, Marketing...
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Nút -->
+                <div class="col-12 text-right">
+                  <a href="{% url 'finance:expense_category_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> 
+                    {% if category %}Cập nhật{% else %}Tạo danh mục{% endif %}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+       
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+{% endblock %}

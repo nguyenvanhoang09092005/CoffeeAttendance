@@ -3,6 +3,7 @@ from django.utils import timezone
 from decimal import Decimal
 from employee.models import Employee
 from Attendance.models import Attendance
+from home_auth.models import CustomUser 
 import uuid
 
 
@@ -35,9 +36,9 @@ class Expense(models.Model):
     amount = models.DecimalField("Số tiền", max_digits=12, decimal_places=2)
     expense_date = models.DateField("Ngày chi", default=timezone.now)
     
-    # Người tạo và phê duyệt
+    # Người tạo và phê duyệt - Đổi từ Employee sang CustomUser
     created_by = models.ForeignKey(
-        Employee, 
+        CustomUser,  # Changed from Employee to CustomUser
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
@@ -45,7 +46,7 @@ class Expense(models.Model):
         verbose_name="Người tạo"
     )
     approved_by = models.ForeignKey(
-        Employee,
+        CustomUser,  # Changed from Employee to CustomUser
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -84,9 +85,9 @@ class Revenue(models.Model):
     amount = models.DecimalField("Số tiền", max_digits=12, decimal_places=2)
     revenue_date = models.DateField("Ngày thu", default=timezone.now)
     
-    # Người ghi nhận
+    # Người ghi nhận - Đổi từ Employee sang CustomUser
     created_by = models.ForeignKey(
-        Employee, 
+        CustomUser,  # Changed from Employee to CustomUser
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
@@ -153,9 +154,9 @@ class PayrollSummary(models.Model):
     ]
     status = models.CharField("Trạng thái", max_length=10, choices=STATUS_CHOICES, default='draft')
     
-    # Người tạo và phê duyệt
+    # Người tạo và phê duyệt - Đổi từ Employee sang CustomUser
     created_by = models.ForeignKey(
-        Employee,
+        CustomUser,  # Changed from Employee to CustomUser
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -163,7 +164,7 @@ class PayrollSummary(models.Model):
         verbose_name="Người lập"
     )
     approved_by = models.ForeignKey(
-        Employee,
+        CustomUser,  # Changed from Employee to CustomUser
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

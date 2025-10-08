@@ -1,4 +1,55 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block body %}
+
+<style>
+  form select,
+  form input[type="date"],
+  form input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 4px rgba(40, 167, 69, 0.4);
+  }
+
+  .btn-success {
+    background-color: #218838;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-success:hover {
+    background-color: #2eb85c;
+    transform: scale(1.05);
+  }
+
+  .text-ellipsis {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .text-expanded {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    text-overflow: clip !important;
+    max-width: none !important;
+  }
+</style>
+
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -17,25 +68,25 @@
           <a href="#" class="btn btn-outline-primary mr-2">
             <i class="fas fa-download"></i> Download
           </a>
-          <a href="{% url 'finance:revenue_create' %}" class="btn btn-success">
+          <a href="{% url 'finance:revenue_create' %}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Thêm doanh thu
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Filter Card -->
+    <!-- Filter Form -->
     <div class="row">
       <div class="col-sm-12">
-        <div class="card">
+        <div class="card card-table">
           <div class="card-body">
-            <form method="get" class="row">
+            <form method="get" class="row g-2 align-items-center">
               <div class="col-md-4">{{ filter_form.category }}</div>
               <div class="col-md-3">{{ filter_form.start_date }}</div>
               <div class="col-md-3">{{ filter_form.end_date }}</div>
-              <div class="col-md-2">
-                <button type="submit" class="btn btn-primary btn-block">
-                  <i class="fas fa-filter"></i> Lọc
+              <div class="col-md-1 d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary text-white rounded-circle shadow-sm" title="Tìm kiếm">
+                  <i class="fas fa-search"></i>
                 </button>
               </div>
             </form>
@@ -47,9 +98,13 @@
     <!-- Total Amount -->
     <div class="row">
       <div class="col-sm-12">
-        <div class="alert alert-success">
-          <strong><i class="fas fa-calculator"></i> Tổng doanh thu:</strong> {{
-          total_amount|floatformat:0 }} VND
+        <div class="alert alert-success d-flex align-items-center justify-content-between shadow-sm">
+          <div>
+            <strong><i class="fas fa-calculator me-2"></i> Tổng doanh thu:</strong>
+          </div>
+          <div class="fs-5 fw-bold text-success">
+            {{ total_amount|floatformat:0|intcomma }} VND
+          </div>
         </div>
       </div>
     </div>
@@ -69,18 +124,14 @@
                     <th class="text-center">Mô tả</th>
                     <th class="text-center">Số tiền</th>
                     <th class="text-center">Người ghi nhận</th>
-                    <th class="text-center">Action</th>
+                    <th class="text-center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for revenue in revenues %}
                   <tr>
-                    <td class="text-center">
-                      {{ revenue.revenue_date|date:"d/m/Y" }}
-                    </td>
-                    <td class="text-center">
-                      <strong>{{ revenue.source }}</strong>
-                    </td>
+                    <td class="text-center">{{ revenue.revenue_date|date:"d/m/Y" }}</td>
+                    <td class="text-center"><strong>{{ revenue.source }}</strong></td>
                     <td class="text-center">
                       {% if revenue.category == 'sales' %}
                       <span class="badge badge-primary">Bán hàng</span>
@@ -90,40 +141,33 @@
                       <span class="badge badge-secondary">Khác</span>
                       {% endif %}
                     </td>
-                    <td class="text-center">
-                      {{ revenue.description|truncatewords:10 }}
+                    <td class="text-center text-ellipsis" onclick="toggleDescription(this)">
+                      {{ revenue.description|default:"-" }}
                     </td>
                     <td class="text-center">
-                      <strong class="text-success"
-                        >{{ revenue.amount|floatformat:0 }} VND</strong
-                      >
+                      <strong class="text-success">{{ revenue.amount|floatformat:0|intcomma }} VND</strong>
                     </td>
                     <td class="text-center">
-                      {% if revenue.created_by %} {{
-                      revenue.created_by.first_name }} {{
-                      revenue.created_by.last_name }} {% else %}
-                      <span class="text-muted">-</span>
+                      {% if revenue.created_by %}
+                        {% if revenue.created_by.first_name or revenue.created_by.last_name %}
+                          {{ revenue.created_by.first_name }} {{ revenue.created_by.last_name }}
+                        {% else %}
+                          {{ revenue.created_by.username }}
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">-</span>
                       {% endif %}
                     </td>
                     <td class="text-center">
                       <div class="actions">
-                        <a
-                          href="{% url 'finance:revenue_detail' revenue.pk %}"
-                          class="btn btn-sm bg-info-light mr-2"
-                        >
+                        <a href="{% url 'finance:revenue_detail' revenue.pk %}" class="btn btn-sm bg-info-light mr-2">
                           <i class="fas fa-eye"></i>
                         </a>
-                        <a
-                          href="{% url 'finance:revenue_update' revenue.pk %}"
-                          class="btn btn-sm bg-success-light mr-2"
-                        >
+                        <a href="{% url 'finance:revenue_update' revenue.pk %}" class="btn btn-sm bg-success-light mr-2">
                           <i class="fas fa-pen"></i>
                         </a>
-                        <a
-                          href="{% url 'finance:revenue_delete' revenue.pk %}"
-                          class="btn btn-sm bg-danger-light"
-                          onclick="return confirm('Bạn có chắc muốn xóa doanh thu này?');"
-                        >
+                        <a href="{% url 'finance:revenue_delete' revenue.pk %}" class="btn btn-sm bg-danger-light"
+                          onclick="return confirm('Bạn có chắc muốn xóa doanh thu này?');">
                           <i class="fas fa-trash"></i>
                         </a>
                       </div>
@@ -131,9 +175,7 @@
                   </tr>
                   {% empty %}
                   <tr>
-                    <td colspan="7" class="text-center text-muted">
-                      Chưa có doanh thu nào
-                    </td>
+                    <td colspan="7" class="text-center text-muted">Chưa có doanh thu nào</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -150,10 +192,18 @@
   </footer>
 </div>
 
+<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
 <script src="{% static 'assets/js/script.js' %}"></script>
+
+<script>
+  function toggleDescription(element) {
+    element.classList.toggle('text-expanded');
+  }
+</script>
+
 {% endblock %}

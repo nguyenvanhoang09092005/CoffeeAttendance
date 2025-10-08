@@ -40,9 +40,11 @@ class ExpenseForm(forms.ModelForm):
             "category": forms.Select(attrs={
                 "class": "form-select"
             }),
-            "description": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Mô tả chi phí"
+            "description": forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Nhập mô tả chi tiết...',
+                'style': 'resize: vertical; font-size: 15px;'
             }),
             "amount": forms.NumberInput(attrs={
                 "class": "form-control",

@@ -1,4 +1,48 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+
+<style>
+  form select,
+  form input[type="date"],
+  form input[type="text"],
+  form textarea {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus,
+  form textarea:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 4px rgba(40, 167, 69, 0.4);
+  }
+
+  .btn-success {
+    background-color: #218838;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-success:hover {
+    background-color: #2eb85c;
+    transform: scale(1.1);
+  }
+
+  .form-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-left: 4px solid #28a745;
+    padding-left: 10px;
+    color: #28a745;
+  }
+</style>
+
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -23,105 +67,106 @@
       </div>
     </div>
 
-    <!-- Form -->
+    <!-- Form content -->
     <div class="row">
-      <div class="col-md-8 offset-md-2">
+      <div class="col-sm-12">
         <div class="card">
-          <div class="card-header">
-            <h4 class="card-title mb-0">Thông tin doanh thu</h4>
-          </div>
           <div class="card-body">
             <form method="post">
               {% csrf_token %}
-
               <div class="row">
+                <!-- Thông tin chung -->
+                <div class="col-12">
+                  <h5 class="form-title"><span>Thông tin doanh thu</span></h5>
+                </div>
+
                 <!-- Nguồn thu -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label
-                      >{{ form.source.label }}
-                      <span class="text-danger">*</span></label
-                    >
-                    {{ form.source }} {% if form.source.errors %}
-                    <div class="text-danger small">
-                      {{ form.source.errors }}
-                    </div>
+                    <label>{{ form.source.label }} <span class="text-danger">*</span></label>
+                    {{ form.source }}
+                    {% if form.source.errors %}
+                    <div class="text-danger small">{{ form.source.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Loại doanh thu -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
                     <label>{{ form.category.label }}</label>
-                    {{ form.category }} {% if form.category.errors %}
-                    <div class="text-danger small">
-                      {{ form.category.errors }}
-                    </div>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                    <div class="text-danger small">{{ form.category.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Số tiền -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label
-                      >{{ form.amount.label }}
-                      <span class="text-danger">*</span></label
-                    >
-                    {{ form.amount }} {% if form.amount.errors %}
-                    <div class="text-danger small">
-                      {{ form.amount.errors }}
-                    </div>
+                    <label>{{ form.amount.label }} <span class="text-danger">*</span></label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                    <div class="text-danger small">{{ form.amount.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Ngày thu -->
-                <div class="col-md-6">
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
                     <label>{{ form.revenue_date.label }}</label>
-                    {{ form.revenue_date }} {% if form.revenue_date.errors %}
-                    <div class="text-danger small">
-                      {{ form.revenue_date.errors }}
-                    </div>
+                    {{ form.revenue_date }}
+                    {% if form.revenue_date.errors %}
+                    <div class="text-danger small">{{ form.revenue_date.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Mô tả -->
-                <div class="col-md-12">
+                <div class="col-12">
                   <div class="form-group">
                     <label>{{ form.description.label }}</label>
-                    {{ form.description }} {% if form.description.errors %}
-                    <div class="text-danger small">
-                      {{ form.description.errors }}
-                    </div>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small">{{ form.description.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Ghi chú -->
-                <div class="col-md-12">
+                <div class="col-12">
+                  <h5 class="form-title"><span>Ghi chú & thông tin bổ sung</span></h5>
+                </div>
+
+                <div class="col-12">
                   <div class="form-group">
                     <label>{{ form.note.label }}</label>
-                    {{ form.note }} {% if form.note.errors %}
+                    {{ form.note }}
+                    {% if form.note.errors %}
                     <div class="text-danger small">{{ form.note.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
-              </div>
 
-              <div class="text-right">
-                <a
-                  href="{% url 'finance:revenue_list' %}"
-                  class="btn btn-secondary"
-                >
-                  <i class="fas fa-times"></i> Hủy
-                </a>
-                <button type="submit" class="btn btn-success">
-                  <i class="fas fa-check"></i> Lưu
-                </button>
+                <!-- Thông báo -->
+                <div class="col-12">
+                  <div class="alert alert-success mt-2">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Lưu ý:</strong> Vui lòng nhập đầy đủ thông tin doanh thu. Các trường có dấu * là bắt buộc.
+                  </div>
+                </div>
+
+                <!-- Nút -->
+                <div class="col-12 text-right">
+                  <a href="{% url 'finance:revenue_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                  </a>
+                  <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Lưu doanh thu
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -135,6 +180,7 @@
   </footer>
 </div>
 
+<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>

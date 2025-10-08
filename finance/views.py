@@ -12,7 +12,7 @@ from .models import (
 )
 from .forms import (
     ExpenseForm, RevenueForm, PayrollSummaryForm,
-    ExpenseFilterForm, RevenueFilterForm, PayrollFilterForm
+    ExpenseFilterForm, RevenueFilterForm, PayrollFilterForm, ExpenseCategoryForm
 )
 from employee.models import Employee
 
@@ -51,7 +51,7 @@ def dashboard(request):
     
     # Bảng lương chờ duyệt
     pending_payrolls = PayrollSummary.objects.filter(
-        status='pending'
+        status='draft'
     ).count()
     
     # Dữ liệu gần đây
@@ -84,6 +84,165 @@ def dashboard(request):
 
 
 # ======= CHI PHÍ =======
+
+@login_required
+def expense_category_list(request):
+    """Danh sách danh mục chi phí"""
+    categories = ExpenseCategory.objects.all().order_by('name')
+    
+    context = {
+        "categories": categories,
+    }
+    return render(request, "finance/expense_category_list.html", context)
+
+
+@login_required
+def expense_category_create(request):
+    """Tạo danh mục chi phí mới"""
+    if request.method == "POST":
+        form = ExpenseCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Đã tạo danh mục chi phí thành công!")
+            return redirect("finance:expense_category_list")
+    else:
+        form = ExpenseCategoryForm()
+    
+    return render(request, "finance/expense_category_form.html", {"form": form})
+
+
+@login_required
+def expense_category_update(request, pk):
+    """Cập nhật danh mục chi phí"""
+    category = get_object_or_404(ExpenseCategory, pk=pk)
+    
+    if request.method == "POST":
+        form = ExpenseCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Đã cập nhật danh mục chi phí!")
+            return redirect("finance:expense_category_list")
+    else:
+        form = ExpenseCategoryForm(instance=category)
+    
+    return render(request, "finance/expense_category_form.html", {
+        "form": form,
+        "category": category
+    })
+
+
+@login_required
+def expense_category_detail(request, pk):
+    """Chi tiết danh mục chi phí"""
+    category = get_object_or_404(ExpenseCategory, pk=pk)
+    
+    # Lấy tất cả chi phí của danh mục này
+    expenses = category.expenses.select_related(
+        'created_by', 'approved_by'
+    ).order_by('-expense_date', '-created_at')
+    
+    # Thống kê theo trạng thái
+    total_expenses = expenses.count()
+    pending_expenses = expenses.filter(status='pending').count()
+    approved_expenses = expenses.filter(status='approved').count()
+    rejected_expenses = expenses.filter(status='rejected').count()
+    
+    # Tổng số tiền theo trạng thái
+    total_pending_amount = expenses.filter(status='pending').aggregate(
+        Sum('amount'))['amount__sum'] or Decimal(0)
+    total_approved_amount = expenses.filter(status='approved').aggregate(
+        Sum('amount'))['amount__sum'] or Decimal(0)
+    
+    # Filter theo trạng thái (nếu có)
+    status_filter = request.GET.get('status', 'all')
+    if status_filter != 'all':
+        expenses = expenses.filter(status=status_filter)
+    
+    context = {
+        "category": category,
+        "expenses": expenses,
+        "total_expenses": total_expenses,
+        "pending_expenses": pending_expenses,
+        "approved_expenses": approved_expenses,
+        "rejected_expenses": rejected_expenses,
+        "total_pending_amount": total_pending_amount,
+        "total_approved_amount": total_approved_amount,
+        "status_filter": status_filter,
+    }
+    return render(request, "finance/expense_category_detail.html", context)
+
+
+@login_required
+def expense_approve(request, pk):
+    """Phê duyệt chi phí"""
+    expense = get_object_or_404(Expense, pk=pk)
+    
+    if expense.status != 'pending':
+        messages.error(request, "Chỉ có thể phê duyệt chi phí đang chờ duyệt!")
+        return redirect("finance:expense_detail", pk=pk)
+    
+    if request.method == "POST":
+        expense.status = 'approved'
+        expense.approved_by = request.user
+        expense.save()
+        
+        messages.success(request, "Đã phê duyệt chi phí!")
+        
+        # Redirect về category detail nếu có
+        category_id = request.GET.get('from_category')
+        if category_id:
+            return redirect("finance:expense_category_detail", pk=category_id)
+        return redirect("finance:expense_detail", pk=pk)
+    
+    return render(request, "finance/expense_confirm_approve.html", {"expense": expense})
+
+
+@login_required
+def expense_reject(request, pk):
+    """Từ chối chi phí"""
+    expense = get_object_or_404(Expense, pk=pk)
+    
+    if expense.status != 'pending':
+        messages.error(request, "Chỉ có thể từ chối chi phí đang chờ duyệt!")
+        return redirect("finance:expense_detail", pk=pk)
+    
+    if request.method == "POST":
+        expense.status = 'rejected'
+        expense.approved_by = request.user
+        expense.save()
+        
+        messages.warning(request, "Đã từ chối chi phí!")
+        
+        # Redirect về category detail nếu có
+        category_id = request.GET.get('from_category')
+        if category_id:
+            return redirect("finance:expense_category_detail", pk=category_id)
+        return redirect("finance:expense_detail", pk=pk)
+    
+    return render(request, "finance/expense_confirm_reject.html", {"expense": expense})
+
+
+@login_required
+def expense_category_delete(request, pk):
+    """Xóa danh mục chi phí"""
+    category = get_object_or_404(ExpenseCategory, pk=pk)
+    
+    # Kiểm tra xem có chi phí nào đang sử dụng danh mục này không
+    if category.expenses.exists():
+        messages.error(
+            request, 
+            f"Không thể xóa danh mục '{category.name}' vì đang có {category.expenses.count()} chi phí sử dụng!"
+        )
+        return redirect("finance:expense_category_list")
+    
+    if request.method == "POST":
+        category.delete()
+        messages.success(request, "Đã xóa danh mục chi phí!")
+        return redirect("finance:expense_category_list")
+    
+    return render(request, "finance/expense_category_confirm_delete.html", {"category": category})
+
+
 @login_required
 def expense_list(request):
     """Danh sách chi phí"""
@@ -121,11 +280,7 @@ def expense_create(request):
         form = ExpenseForm(request.POST, request.FILES)
         if form.is_valid():
             expense = form.save(commit=False)
-            # Gán người tạo
-            try:
-                expense.created_by = request.user.employee_profile
-            except:
-                expense.created_by = None
+            expense.created_by = request.user
             expense.save()
             messages.success(request, "Đã tạo chi phí thành công!")
             return redirect("finance:expense_list")
@@ -214,11 +369,7 @@ def revenue_create(request):
         form = RevenueForm(request.POST)
         if form.is_valid():
             revenue = form.save(commit=False)
-            # Gán người tạo
-            try:
-                revenue.created_by = request.user.employee_profile
-            except:
-                revenue.created_by = None
+            revenue.created_by = request.user
             revenue.save()
             messages.success(request, "Đã ghi nhận doanh thu!")
             return redirect("finance:revenue_list")
@@ -300,21 +451,15 @@ def payroll_list(request):
 
 @login_required
 def payroll_create(request):
-    """Tạo bảng lương mới"""
+    employees = Employee.objects.all().order_by('first_name')
+
     if request.method == "POST":
         form = PayrollSummaryForm(request.POST)
         if form.is_valid():
             payroll = form.save(commit=False)
-            # Gán người tạo
-            try:
-                payroll.created_by = request.user.employee_profile
-            except:
-                payroll.created_by = None
+            payroll.created_by_id = request.user.id
             payroll.save()
-            
-            # Tự động tạo chi tiết từ chấm công
             payroll.generate_details_from_attendance()
-            
             messages.success(
                 request, 
                 f"Đã tạo bảng lương cho {payroll.employee.first_name} {payroll.employee.last_name}!"
@@ -322,13 +467,15 @@ def payroll_create(request):
             return redirect("finance:payroll_detail", pk=payroll.pk)
     else:
         form = PayrollSummaryForm()
-    
-    return render(request, "finance/payroll_form.html", {"form": form})
+
+    return render(request, "finance/payroll_form.html", {
+        "form": form,
+        "employees": employees,
+    })
 
 
 @login_required
 def payroll_detail(request, pk):
-    """Chi tiết bảng lương"""
     payroll = get_object_or_404(
         PayrollSummary.objects.select_related(
             'employee', 'created_by', 'approved_by'
@@ -336,7 +483,6 @@ def payroll_detail(request, pk):
         pk=pk
     )
     
-    # Lấy chi tiết
     details = payroll.payroll_details.all().order_by('work_date')
     
     context = {
@@ -348,10 +494,9 @@ def payroll_detail(request, pk):
 
 @login_required
 def payroll_update(request, pk):
-    """Cập nhật bảng lương"""
     payroll = get_object_or_404(PayrollSummary, pk=pk)
+    employees = Employee.objects.all().order_by('first_name')
     
-    # Không cho phép cập nhật nếu đã duyệt hoặc đã thanh toán
     if payroll.status in ['approved', 'paid']:
         messages.error(request, "Không thể cập nhật bảng lương đã duyệt hoặc đã thanh toán!")
         return redirect("finance:payroll_detail", pk=pk)
@@ -360,7 +505,6 @@ def payroll_update(request, pk):
         form = PayrollSummaryForm(request.POST, instance=payroll)
         if form.is_valid():
             form.save()
-            # Tính lại lương
             payroll.calculate_salary()
             messages.success(request, "Đã cập nhật bảng lương!")
             return redirect("finance:payroll_detail", pk=pk)
@@ -369,7 +513,8 @@ def payroll_update(request, pk):
     
     return render(request, "finance/payroll_form.html", {
         "form": form,
-        "payroll": payroll
+        "payroll": payroll,
+        "employees": employees,
     })
 
 
@@ -378,7 +523,6 @@ def payroll_regenerate(request, pk):
     """Tạo lại chi tiết bảng lương từ chấm công"""
     payroll = get_object_or_404(PayrollSummary, pk=pk)
     
-    # Không cho phép nếu đã duyệt
     if payroll.status in ['approved', 'paid']:
         messages.error(request, "Không thể tạo lại chi tiết cho bảng lương đã duyệt!")
         return redirect("finance:payroll_detail", pk=pk)
@@ -393,15 +537,15 @@ def payroll_regenerate(request, pk):
 
 @login_required
 def payroll_approve(request, pk):
-    """Phê duyệt bảng lương"""
     payroll = get_object_or_404(PayrollSummary, pk=pk)
+    
+    if payroll.status not in ['draft', 'pending']:
+        messages.error(request, "Chỉ có thể phê duyệt bảng lương ở trạng thái Draft hoặc Pending!")
+        return redirect("finance:payroll_detail", pk=pk)
     
     if request.method == "POST":
         payroll.status = 'approved'
-        try:
-            payroll.approved_by = request.user.employee_profile
-        except:
-            payroll.approved_by = None
+        payroll.approved_by = request.user
         payroll.approved_at = timezone.now()
         payroll.save()
         
@@ -413,10 +557,8 @@ def payroll_approve(request, pk):
 
 @login_required
 def payroll_delete(request, pk):
-    """Xóa bảng lương"""
     payroll = get_object_or_404(PayrollSummary, pk=pk)
     
-    # Không cho phép xóa nếu đã duyệt hoặc đã thanh toán
     if payroll.status in ['approved', 'paid']:
         messages.error(request, "Không thể xóa bảng lương đã duyệt hoặc đã thanh toán!")
         return redirect("finance:payroll_detail", pk=pk)

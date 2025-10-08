@@ -1,4 +1,54 @@
 {% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% load humanize %}
+<style>
+  form select,
+  form input[type="date"],
+  form input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 4px rgba(255, 193, 7, 0.4);
+  }
+
+  .btn-warning {
+    background-color: #b7791f;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-warning:hover {
+    background-color: #d69e2e;
+    transform: scale(1.1);
+  }
+
+  .text-ellipsis {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  /* Khi mở rộng */
+  .text-expanded {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    text-overflow: clip !important;
+    max-width: none !important;
+  }
+
+
+</style>
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -24,36 +74,81 @@
       </div>
     </div>
 
-    <!-- Filter Card -->
+     <!-- Filter Form -->
     <div class="row">
       <div class="col-sm-12">
-        <div class="card">
+        <div class="card card-table">
           <div class="card-body">
-            <form method="get" class="row">
-              <div class="col-md-3">{{ filter_form.category }}</div>
-              <div class="col-md-2">{{ filter_form.status }}</div>
-              <div class="col-md-3">{{ filter_form.start_date }}</div>
-              <div class="col-md-3">{{ filter_form.end_date }}</div>
-              <div class="col-md-1">
-                <button type="submit" class="btn btn-primary btn-block">
-                  <i class="fas fa-filter"></i>
-                </button>
-              </div>
-            </form>
+            <form method="get" class="row g-2 align-items-center">
+  <!-- Nhân viên -->
+  <div class="col-md-3">
+    <div class="form-group mb-0">
+      {{ filter_form.category }}
+    </div>
+  </div>
+
+  <!-- Trạng thái -->
+  <div class="col-md-2">
+    <div class="form-group mb-0">
+      {{ filter_form.status }}
+    </div>
+  </div>
+
+  <!-- Ngày bắt đầu -->
+  <div class="col-md-2">
+    <div class="form-group mb-0">
+      {{ filter_form.start_date }}
+    </div>
+  </div>
+
+  <!-- Ngày kết thúc -->
+  <div class="col-md-2">
+    <div class="form-group mb-0">
+      {{ filter_form.end_date }}
+    </div>
+  </div>
+
+  <!-- Kiểu sắp xếp (nằm bên phải cùng hàng) -->
+  <div class="col-md-2">
+    <div class="form-group mb-0">
+      <select name="sort" class="form-control" onchange="this.form.submit()">
+        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Ngày mới nhất</option>
+        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Ngày cũ nhất</option>
+        <option value="amount_desc" {% if sort_by == 'amount_desc' %}selected{% endif %}>Giá cao nhất</option>
+        <option value="amount_asc" {% if sort_by == 'amount_asc' %}selected{% endif %}>Giá thấp nhất</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Nút tìm kiếm -->
+  <div class="col-md-1 d-flex justify-content-center">
+    <button type="submit" class="btn btn-warning text-white rounded-circle shadow-sm" title="Tìm kiếm">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</form>
+
           </div>
         </div>
       </div>
     </div>
 
+
+
     <!-- Total Amount -->
     <div class="row">
-      <div class="col-sm-12">
-        <div class="alert alert-info">
-          <strong><i class="fas fa-calculator"></i> Tổng chi phí:</strong> {{
-          total_amount|floatformat:0 }} VND
-        </div>
+  <div class="col-sm-12">
+    <div class="alert alert-info d-flex align-items-center justify-content-between shadow-sm">
+      <div>
+        <strong><i class="fas fa-calculator me-2"></i> Tổng chi phí:</strong>
+      </div>
+      <div class="fs-5 fw-bold text-primary">
+        {{ total_amount|floatformat:0|intcomma }} VND
       </div>
     </div>
+  </div>
+</div>
+
 
     <!-- Table -->
     <div class="row">
@@ -70,33 +165,36 @@
                     <th class="text-center">Số tiền</th>
                     <th class="text-center">Trạng thái</th>
                     <th class="text-center">Người tạo</th>
-                    <th class="text-center">Action</th>
+                    <th class="text-center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
+                  
                   {% for expense in expenses %}
                   <tr>
-                    <td class="text-center">
+                    <td class="text-start">
                       {{ expense.expense_date|date:"d/m/Y" }}
                     </td>
-                    <td class="text-center">
+                    <td class="text-start">
                       {% if expense.category %}
-                      <span class="badge badge-secondary"
+                      <span class=" fs-6"
                         >{{ expense.category.name }}</span
                       >
                       {% else %}
                       <span class="text-muted">Khác</span>
                       {% endif %}
                     </td>
-                    <td class="text-center">
-                      {{ expense.description|truncatewords:15 }}
-                    </td>
-                    <td class="text-center">
+                    <td class="text-center text-ellipsis" onclick="toggleDescription(this)">
+  {{ expense.description }}
+</td>
+
+                    <td class="text-start">
                       <strong class="text-danger"
-                        >{{ expense.amount|floatformat:0 }} VND</strong
+                      
+                        >{{ expense.amount|floatformat:0 |intcomma }} VND</strong
                       >
                     </td>
-                    <td class="text-center">
+                    <td class="text-start">
                       {% if expense.status == 'pending' %}
                       <span class="badge badge-warning">Chờ duyệt</span>
                       {% elif expense.status == 'approved' %}
@@ -106,12 +204,20 @@
                       {% endif %}
                     </td>
                     <td class="text-center">
-                      {% if expense.created_by %} {{
-                      expense.created_by.first_name }} {{
-                      expense.created_by.last_name }} {% else %}
-                      <span class="text-muted">-</span>
-                      {% endif %}
-                    </td>
+  {% if expense.created_by %}
+    {% if expense.created_by.first_name and expense.created_by.last_name %}
+      {{ expense.created_by.first_name }} {{ expense.created_by.last_name }}
+    {% elif expense.created_by.first_name %}
+      {{ expense.created_by.first_name }}
+    {% else %}
+      {{ expense.created_by.username }}
+    {% endif %}
+    
+  {% else %}
+    <span class="text-muted">-</span>
+  {% endif %}
+</td>
+
                     <td class="text-center">
                       <div class="actions">
                         <a
@@ -163,4 +269,11 @@
 <script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
 <script src="{% static 'assets/js/script.js' %}"></script>
+<script>
+  function toggleDescription(element) {
+    element.classList.toggle('text-expanded');
+  }
+</script>
+
+
 {% endblock %}

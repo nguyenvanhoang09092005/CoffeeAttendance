@@ -1,0 +1,148 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+
+<style>
+  /* Style chung cho form và input */
+  form select,
+  form input[type="date"],
+  form input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  form select:focus,
+  form input:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 4px rgba(255, 193, 7, 0.4);
+  }
+
+  .btn-warning {
+    background-color: #b7791f;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-warning:hover {
+    background-color: #d69e2e;
+    transform: scale(1.05);
+  }
+</style>
+
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title mb-1">Danh mục chi phí</h3>
+          <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Tài chính</a></li>
+            <li class="breadcrumb-item active">Danh mục chi phí</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="{% url 'finance:expense_category_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm danh mục
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách danh mục -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">STT</th>
+                    <th>Tên danh mục</th>
+                    <th>Mô tả</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Số chi phí</th>
+                    <th class="text-center">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for category in categories %}
+                  <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td><strong>{{ category.name }}</strong></td>
+                    <td><small class="text-muted">{{ category.description|default:"-"|truncatewords:15 }}</small></td>
+                    <td class="text-center">
+                      {% if category.is_active %}
+                        <span class="badge bg-success">Đang dùng</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Tạm ngưng</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-info">{{ category.expenses.count }}</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="actions">
+                         <a href="{% url 'finance:expense_category_detail' category.pk %}" 
+       class="btn btn-sm bg-info-light me-2" title="Xem chi tiết">
+      <i class="fas fa-eye"></i>
+    </a>
+                        <a href="{% url 'finance:expense_category_update' category.pk %}" 
+                           class="btn btn-sm bg-success-light me-2" title="Chỉnh sửa">
+                          <i class="fas fa-pen"></i>
+                        </a>
+                        {% if category.expenses.count == 0 %}
+                        <a href="{% url 'finance:expense_category_delete' category.pk %}" 
+                           class="btn btn-sm bg-danger-light" 
+                           onclick="return confirm('Bạn có chắc muốn xóa danh mục này?');"
+                           title="Xóa">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                        {% else %}
+                        <button class="btn btn-sm bg-secondary-light" disabled
+                                title="Không thể xóa vì đang có chi phí sử dụng">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                      Chưa có danh mục chi phí nào.<br>
+                      <a href="{% url 'finance:expense_category_create' %}" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-plus me-1"></i> Tạo danh mục đầu tiên
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="text-center text-muted small mt-3 mb-2">
+    <p class="mb-0">© Bản quyền thuộc về Đá Cuội</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+{% endblock %}

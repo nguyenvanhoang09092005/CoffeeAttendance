@@ -48,9 +48,7 @@
           </ul>
         </div>
         <div class="col-auto text-right float-right ml-auto">
-          <a href="#" class="btn btn-outline-primary mr-2">
-            <i class="fas fa-download"></i> Download
-          </a>
+          
           <a href="{% url 'finance:payroll_create' %}" class="btn btn-primary">
             <i class="fas fa-plus"></i>
           </a>
@@ -191,31 +189,26 @@
 
                     <!-- Hành động -->
                     <td class="text-center">
-                      <div class="actions">
-                        <a href="{% url 'finance:payroll_detail' payroll.pk %}" class="btn btn-sm bg-info-light mr-2">
-                          <i class="fas fa-eye"></i>
-                        </a>
-
-                        {% if payroll.status == 'draft' or payroll.status == 'pending' %}
-                          <a href="{% url 'finance:payroll_update' payroll.pk %}" class="btn btn-sm bg-success-light mr-2">
-                            <i class="fas fa-pen"></i>
-                          </a>
-                        {% endif %}
-
-                        {% if payroll.status == 'pending' %}
-                          <a href="{% url 'finance:payroll_approve' payroll.pk %}" class="btn btn-sm bg-primary-light mr-2" title="Phê duyệt">
-                            <i class="fas fa-check"></i>
-                          </a>
-                        {% endif %}
-
-                        {% if payroll.status == 'draft' %}
-                          <a href="{% url 'finance:payroll_delete' payroll.pk %}" class="btn btn-sm bg-danger-light"
-                             onclick="return confirm('Bạn có chắc muốn xóa bảng lương này?');">
-                            <i class="fas fa-trash"></i>
-                          </a>
-                        {% endif %}
-                      </div>
-                    </td>
+  <div class="actions">
+    <a href="{% url 'finance:payroll_detail' payroll.pk %}" class="btn btn-sm bg-info-light mr-2">
+      <i class="fas fa-eye"></i>
+    </a>
+    {% if payroll.status == 'draft' or payroll.status == 'pending' %}
+      <a href="{% url 'finance:payroll_update' payroll.pk %}" class="btn btn-sm bg-success-light mr-2">
+        <i class="fas fa-pen"></i>
+      </a>
+      <a href="{% url 'finance:payroll_approve' payroll.pk %}" class="btn btn-sm bg-primary-light mr-2" title="Phê duyệt">
+        <i class="fas fa-check"></i>
+      </a>
+    {% endif %}
+    {% if payroll.status == 'draft' %}
+      <a href="{% url 'finance:payroll_delete' payroll.pk %}" class="btn btn-sm bg-danger-light"
+         onclick="return confirm('Bạn có chắc muốn xóa bảng lương này?');">
+        <i class="fas fa-trash"></i>
+      </a>
+    {% endif %}
+  </div>
+</td>
                   </tr>
                   {% empty %}
                   <tr>

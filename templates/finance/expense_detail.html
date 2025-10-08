@@ -1,7 +1,9 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
 <div class="page-wrapper">
   <div class="content container-fluid">
-    <!-- Page Header -->
+    <!-- Tiêu đề trang -->
     <div class="page-header">
       <div class="row align-items-center">
         <div class="col">
@@ -16,131 +18,124 @@
             <li class="breadcrumb-item active">Chi tiết</li>
           </ul>
         </div>
-        <div class="col-auto text-right float-right ml-auto">
+        <div class="col-auto">
           {% if expense.status == 'pending' %}
-          <a
-            href="{% url 'finance:expense_update' expense.pk %}"
-            class="btn btn-warning mr-2"
-          >
-            <i class="fas fa-pen"></i> Sửa
+          <a href="{% url 'finance:expense_update' expense.pk %}" class="btn btn-primary me-2">
+            <i class="fas fa-pen me-1"></i> Chỉnh sửa
           </a>
           {% endif %}
           <a href="{% url 'finance:expense_list' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay lại
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Content -->
+    <!-- Thông tin chi tiết -->
     <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <div class="card">
-          <div class="card-header">
-            <div class="row align-items-center">
-              <div class="col">
-                <h4 class="card-title mb-0">Thông tin chi phí</h4>
-              </div>
-              <div class="col-auto">
-                {% if expense.status == 'pending' %}
-                <span class="badge badge-warning">Chờ duyệt</span>
-                {% elif expense.status == 'approved' %}
-                <span class="badge badge-success">Đã duyệt</span>
-                {% else %}
-                <span class="badge badge-danger">Từ chối</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
+      <div class="col-12">
+        <div class="card shadow-sm">
           <div class="card-body">
             <div class="row">
+              <div class="col-12">
+                <h5 class="form-title mb-3"><span>Thông tin chi phí</span></h5>
+              </div>
+
               <!-- Loại chi phí -->
-              <div class="col-md-6">
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
                   <label class="text-muted">Loại chi phí</label>
-                  <p>
+                  <div>
                     {% if expense.category %}
-                    <span class="badge badge-secondary"
-                      >{{ expense.category.name }}</span
-                    >
+                      <span class="badge bg-secondary">{{ expense.category.name }}</span>
                     {% else %}
-                    <span class="text-muted">Khác</span>
+                      <span class="text-muted">Khác</span>
                     {% endif %}
-                  </p>
+                  </div>
                 </div>
               </div>
 
               <!-- Số tiền -->
-              <div class="col-md-6">
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
                   <label class="text-muted">Số tiền</label>
-                  <p>
-                    <strong class="text-danger" style="font-size: 1.5rem"
-                      >{{ expense.amount|floatformat:0 }} VND</strong
-                    >
-                  </p>
-                </div>
-              </div>
-
-              <!-- Mô tả -->
-              <div class="col-md-12">
-                <div class="form-group">
-                  <label class="text-muted">Mô tả</label>
-                  <p>{{ expense.description }}</p>
+                  <div class="fw-bold text-danger fs-5">
+                    {{ expense.amount|floatformat:0 }} VND
+                  </div>
                 </div>
               </div>
 
               <!-- Ngày chi -->
-              <div class="col-md-6">
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
                   <label class="text-muted">Ngày chi</label>
-                  <p>{{ expense.expense_date|date:"d/m/Y" }}</p>
+                  <div>{{ expense.expense_date|date:"d/m/Y" }}</div>
+                </div>
+              </div>
+
+              <!-- Mô tả -->
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="text-muted">Mô tả</label>
+                  <div class="text-break">{{ expense.description|default:"-" }}</div>
                 </div>
               </div>
 
               <!-- Người tạo -->
-              <div class="col-md-6">
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
                   <label class="text-muted">Người tạo</label>
-                  <p>
-                    {% if expense.created_by %} {{ expense.created_by.first_name
-                    }} {{ expense.created_by.last_name }} {% else %}
-                    <span class="text-muted">-</span>
+                  <div>
+                    {% if expense.created_by %}
+                      {{ expense.created_by.first_name }} {{ expense.created_by.last_name }}
+                    {% else %}
+                      <span class="text-muted">-</span>
                     {% endif %}
-                  </p>
+                  </div>
                 </div>
               </div>
 
               <!-- Người phê duyệt -->
-              {% if expense.approved_by %}
-              <div class="col-md-6">
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
                   <label class="text-muted">Người phê duyệt</label>
-                  <p>
-                    {{ expense.approved_by.first_name }} {{
-                    expense.approved_by.last_name }}
-                  </p>
+                  <div>
+                    {% if expense.approved_by %}
+                      {{ expense.approved_by.first_name }} {{ expense.approved_by.last_name }}
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
-              {% endif %}
 
-              <!-- Hóa đơn/Chứng từ -->
-              {% if expense.receipt_image %}
-              <div class="col-md-12">
+              <!-- Trạng thái -->
+              <div class="col-md-6 col-lg-4">
                 <div class="form-group">
-                  <label class="text-muted">Hóa đơn/Chứng từ</label>
+                  <label class="text-muted">Trạng thái</label>
+                  <div>
+                    {% if expense.status == 'pending' %}
+                      <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                    {% elif expense.status == 'approved' %}
+                      <span class="badge bg-success">Đã duyệt</span>
+                    {% else %}
+                      <span class="badge bg-danger">Từ chối</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hóa đơn / chứng từ -->
+              {% if expense.receipt_image %}
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="text-muted">Hóa đơn / Chứng từ</label>
                   <div>
                     <a href="{{ expense.receipt_image.url }}" target="_blank">
-                      <img
-                        src="{{ expense.receipt_image.url }}"
-                        alt="Receipt"
-                        class="img-fluid"
-                        style="
-                          max-width: 300px;
-                          border: 1px solid #ddd;
-                          border-radius: 5px;
-                        "
-                      />
+                      <img src="{{ expense.receipt_image.url }}" 
+                           alt="Receipt" 
+                           class="img-fluid rounded border"
+                           style="max-width: 300px;">
                     </a>
                   </div>
                 </div>
@@ -149,26 +144,26 @@
 
               <!-- Ghi chú -->
               {% if expense.note %}
-              <div class="col-md-12">
+              <div class="col-12">
                 <div class="form-group">
                   <label class="text-muted">Ghi chú</label>
-                  <p>{{ expense.note }}</p>
+                  <div class="text-break">{{ expense.note }}</div>
                 </div>
               </div>
               {% endif %}
 
-              <!-- Thời gian -->
+              <!-- Ngày tạo và cập nhật -->
               <div class="col-md-6">
                 <div class="form-group">
                   <label class="text-muted">Ngày tạo</label>
-                  <p>{{ expense.created_at|date:"d/m/Y H:i" }}</p>
+                  <div>{{ expense.created_at|date:"d/m/Y H:i" }}</div>
                 </div>
               </div>
 
               <div class="col-md-6">
                 <div class="form-group">
                   <label class="text-muted">Cập nhật lần cuối</label>
-                  <p>{{ expense.updated_at|date:"d/m/Y H:i" }}</p>
+                  <div>{{ expense.updated_at|date:"d/m/Y H:i" }}</div>
                 </div>
               </div>
             </div>
@@ -183,6 +178,7 @@
   </footer>
 </div>
 
+<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
