@@ -5,13 +5,15 @@
 <style>
   form select,
   form input[type="date"],
-  form input[type="text"],
+  form input[type="number"],
+  form input[type="file"],
   form textarea {
     border-radius: 8px;
     border: 1px solid #dddddd;
     padding: 8px 10px;
     width: 100%;
     font-size: 14px;
+    background-color: #fff;
   }
 
   form select:focus,
@@ -30,7 +32,7 @@
 
   .btn-success:hover {
     background-color: #2eb85c;
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 
   .form-title {
@@ -40,6 +42,42 @@
     border-left: 4px solid #28a745;
     padding-left: 10px;
     color: #28a745;
+  }
+
+  .expense-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-left: 4px solid #dc3545;
+    padding-left: 10px;
+    color: #dc3545;
+  }
+
+
+  
+  .amount-preview {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-top: 10px;
+  }
+
+  .expense-row {
+    background: transparent;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #fa0000ff;
+  }
+
+  .expense-row.to-remove {
+    opacity: 0.5;
+    background: #f8f9fa;
+  }
+
+  .btn-remove-expense {
+    padding: 5px 10px;
+    font-size: 12px;
   }
 </style>
 
@@ -72,51 +110,18 @@
       <div class="col-sm-12">
         <div class="card">
           <div class="card-body">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data" id="revenueForm">
               {% csrf_token %}
               <div class="row">
-                <!-- Thông tin chung -->
+                <!-- PHẦN 1: THÔNG TIN DOANH THU -->
                 <div class="col-12">
-                  <h5 class="form-title"><span>Thông tin doanh thu</span></h5>
+                  <h5 class="form-title"><span>Thông tin ca làm việc</span></h5>
                 </div>
 
-                <!-- Nguồn thu -->
+                <!-- Ngày -->
                 <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label>{{ form.source.label }} <span class="text-danger">*</span></label>
-                    {{ form.source }}
-                    {% if form.source.errors %}
-                    <div class="text-danger small">{{ form.source.errors }}</div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <!-- Loại doanh thu -->
-                <div class="col-12 col-sm-6">
-                  <div class="form-group">
-                    <label>{{ form.category.label }}</label>
-                    {{ form.category }}
-                    {% if form.category.errors %}
-                    <div class="text-danger small">{{ form.category.errors }}</div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <!-- Số tiền -->
-                <div class="col-12 col-sm-6">
-                  <div class="form-group">
-                    <label>{{ form.amount.label }} <span class="text-danger">*</span></label>
-                    {{ form.amount }}
-                    {% if form.amount.errors %}
-                    <div class="text-danger small">{{ form.amount.errors }}</div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <!-- Ngày thu -->
-                <div class="col-12 col-sm-6">
-                  <div class="form-group">
-                    <label>{{ form.revenue_date.label }}</label>
+                    <label>{{ form.revenue_date.label }} <span class="text-danger">*</span></label>
                     {{ form.revenue_date }}
                     {% if form.revenue_date.errors %}
                     <div class="text-danger small">{{ form.revenue_date.errors }}</div>
@@ -124,22 +129,125 @@
                   </div>
                 </div>
 
-                <!-- Mô tả -->
-                <div class="col-12">
+                <!-- Ca -->
+                <div class="col-12 col-sm-6">
                   <div class="form-group">
-                    <label>{{ form.description.label }}</label>
-                    {{ form.description }}
-                    {% if form.description.errors %}
-                    <div class="text-danger small">{{ form.description.errors }}</div>
+                    <label>{{ form.shift.label }} <span class="text-danger">*</span></label>
+                    {{ form.shift }}
+                    {% if form.shift.errors %}
+                    <div class="text-danger small">{{ form.shift.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Doanh thu -->
+                <div class="col-12">
+                  <h5 class="form-title"><span>Các khoản doanh thu</span></h5>
+                </div>
+
+                <!-- Tiền mặt -->
+                <div class="col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label>{{ form.tien_mat.label }}</label>
+                    {{ form.tien_mat }}
+                    {% if form.tien_mat.errors %}
+                    <div class="text-danger small">{{ form.tien_mat.errors }}</div>
+                    {% endif %}
+                    <small class="text-muted">Có thể âm nếu thiếu hụt</small>
+                  </div>
+                </div>
+
+                <!-- Chuyển khoản -->
+                <div class="col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label>{{ form.chuyen_khoan.label }}</label>
+                    {{ form.chuyen_khoan }}
+                    {% if form.chuyen_khoan.errors %}
+                    <div class="text-danger small">{{ form.chuyen_khoan.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- VNPay -->
+                <div class="col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label>{{ form.vnpay.label }}</label>
+                    {{ form.vnpay }}
+                    {% if form.vnpay.errors %}
+                    <div class="text-danger small">{{ form.vnpay.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Nợ -->
+                <div class="col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label>{{ form.no.label }}</label>
+                    {{ form.no }}
+                    {% if form.no.errors %}
+                    <div class="text-danger small">{{ form.no.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Preview tổng -->
+                <div class="col-12">
+                  <div class="alert alert-info">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <strong>Tổng thu:</strong>
+                        <span class="amount-preview text-success" id="totalRevenue">0 VND</span>
+                      </div>
+                      <div class="col-md-4">
+                        <strong>Tổng chi:</strong>
+                        <span class="amount-preview text-danger" id="totalExpense">0 VND</span>
+                      </div>
+                      <div class="col-md-4">
+                        <strong>Danh thu ròng:</strong>
+                        <span class="amount-preview" id="netRevenue">0 VND</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- PHẦN 2: CHI PHÍ -->
+                <div class="col-12">
+                  <h5 class="expense-title">
+                    <span>Chi phí của ca này</span>
+                    <button type="button" class="btn btn-sm btn-danger float-right" id="addExpenseBtn">
+                      <i class="fas fa-plus"></i> Thêm chi phí
+                    </button>
+                  </h5>
+                </div>
+
+                <div class="col-12">
+                  <div id="expenseContainer">
+                    <!-- Chi phí sẽ được thêm vào đây -->
+                  </div>
+                </div>
+
+                <!-- PHẦN 3: CHỨNG TỪ & GHI CHÚ -->
+                <div class="col-12">
+                  <h5 class="form-title"><span>Chứng từ & Ghi chú</span></h5>
+                </div>
+
+                <!-- Hình ảnh chứng từ -->
+                <div class="col-12 col-sm-6">
+                  <div class="form-group">
+                    <label>{{ form.receipt_image.label }}</label>
+                    {{ form.receipt_image }}
+                    {% if form.receipt_image.errors %}
+                    <div class="text-danger small">{{ form.receipt_image.errors }}</div>
+                    {% endif %}
+                    {% if revenue and revenue.receipt_image %}
+                    <div class="mt-2">
+                      <img src="{{ revenue.receipt_image.url }}" alt="Chứng từ" style="max-width: 200px; border-radius: 8px;">
+                    </div>
                     {% endif %}
                   </div>
                 </div>
 
                 <!-- Ghi chú -->
-                <div class="col-12">
-                  <h5 class="form-title"><span>Ghi chú & thông tin bổ sung</span></h5>
-                </div>
-
                 <div class="col-12">
                   <div class="form-group">
                     <label>{{ form.note.label }}</label>
@@ -154,7 +262,7 @@
                 <div class="col-12">
                   <div class="alert alert-success mt-2">
                     <i class="fas fa-info-circle"></i>
-                    <strong>Lưu ý:</strong> Vui lòng nhập đầy đủ thông tin doanh thu. Các trường có dấu * là bắt buộc.
+                    <strong>Lưu ý:</strong> Bạn có thể thêm nhiều chi phí trực tiếp khi nhập doanh thu. Các trường có dấu * là bắt buộc.
                   </div>
                 </div>
 
@@ -180,10 +288,151 @@
   </footer>
 </div>
 
+<!-- Template cho expense row -->
+<template id="expenseTemplate">
+  <div class="expense-row" data-expense-index="">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="form-group">
+          <label>Loại chi phí</label>
+          <select name="expense_category[]" class="form-control">
+            <option value="">-- Chọn loại chi phí --</option>
+            {% for category in expense_categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label>Số tiền <span class="text-danger">*</span></label>
+          <input type="number" name="expense_amount[]" class="form-control expense-amount" step="0.01" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label>Mô tả <span class="text-danger">*</span></label>
+          <input type="text" name="expense_description[]" class="form-control" placeholder="Mô tả chi phí">
+        </div>
+      </div>
+      <div class="col-md-1">
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button type="button" class="btn btn-danger btn-block btn-remove-expense">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-group">
+          <label>Ghi chú</label>
+          <input type="text" name="expense_note[]" class="form-control" placeholder="Ghi chú (tùy chọn)">
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'assets/js/script.js' %}"></script>
+
+<script>
+  let expenseIndex = 0;
+
+  // Tính tổng doanh thu
+  function updateTotalRevenue() {
+    const tienMat = parseFloat($('#id_tien_mat').val()) || 0;
+    const chuyenKhoan = parseFloat($('#id_chuyen_khoan').val()) || 0;
+    const vnpay = parseFloat($('#id_vnpay').val()) || 0;
+    const no = parseFloat($('#id_no').val()) || 0;
+    
+    const total = tienMat + chuyenKhoan + vnpay + no;
+    $('#totalRevenue').text(total.toLocaleString('vi-VN') + ' VND');
+    
+    updateNetRevenue(total);
+  }
+
+  // Tính tổng chi phí
+  function updateTotalExpense() {
+    let totalExpense = 0;
+    $('.expense-amount').each(function() {
+      const amount = parseFloat($(this).val()) || 0;
+      if (!$(this).closest('.expense-row').hasClass('to-remove')) {
+        totalExpense += amount;
+      }
+    });
+    
+    $('#totalExpense').text(totalExpense.toLocaleString('vi-VN') + ' VND');
+    
+    const totalRevenue = parseFloat($('#id_tien_mat').val() || 0) + 
+                         parseFloat($('#id_chuyen_khoan').val() || 0) + 
+                         parseFloat($('#id_vnpay').val() || 0) + 
+                         parseFloat($('#id_no').val() || 0);
+    
+    updateNetRevenue(totalRevenue);
+  }
+
+  // Tính danh thu ròng
+  function updateNetRevenue(totalRevenue) {
+    let totalExpense = 0;
+    $('.expense-amount').each(function() {
+      const amount = parseFloat($(this).val()) || 0;
+      if (!$(this).closest('.expense-row').hasClass('to-remove')) {
+        totalExpense += amount;
+      }
+    });
+    
+    const net = totalRevenue - totalExpense;
+    $('#netRevenue').text(net.toLocaleString('vi-VN') + ' VND');
+    
+    if (net < 0) {
+      $('#netRevenue').addClass('text-danger').removeClass('text-success');
+    } else {
+      $('#netRevenue').addClass('text-success').removeClass('text-danger');
+    }
+  }
+
+  // Thêm dòng chi phí
+  $('#addExpenseBtn').click(function() {
+    const template = $('#expenseTemplate').html();
+    const newExpense = $(template);
+    newExpense.attr('data-expense-index', expenseIndex);
+    $('#expenseContainer').append(newExpense);
+    expenseIndex++;
+    updateTotalExpense();
+  });
+
+  // Xóa dòng chi phí
+  $(document).on('click', '.btn-remove-expense', function() {
+    $(this).closest('.expense-row').remove();
+    updateTotalExpense();
+  });
+
+  // Update khi thay đổi số tiền chi phí
+  $(document).on('input', '.expense-amount', function() {
+    updateTotalExpense();
+  });
+
+  $(document).ready(function() {
+    // Set default values
+    $('#id_tien_mat').val($('#id_tien_mat').val() || 0);
+    $('#id_chuyen_khoan').val($('#id_chuyen_khoan').val() || 0);
+    $('#id_vnpay').val($('#id_vnpay').val() || 0);
+    $('#id_no').val($('#id_no').val() || 0);
+    
+    // Update on change
+    $('#id_tien_mat, #id_chuyen_khoan, #id_vnpay, #id_no').on('input', function() {
+      updateTotalRevenue();
+      updateTotalExpense();
+    });
+    
+    // Initial calculation
+    updateTotalRevenue();
+    updateTotalExpense();
+  });
+</script>
 {% endblock %}

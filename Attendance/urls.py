@@ -10,4 +10,5 @@ urlpatterns = [
     path("manual/", views.attendance_manual, name="manual"),
     path("", views.attendance_list, name="attendance_list"),
     path('history/<int:emp_id>/', views.attendance_history, name='attendance_history'),
+    path('my-history/', views.my_attendance_history, name='my_history'),
 ]

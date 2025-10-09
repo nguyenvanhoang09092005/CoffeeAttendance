@@ -165,7 +165,8 @@
                 </div>
               </div>
               <a class="dropdown-item" href="">Hồ sơ cá nhân</a>
-              <a class="dropdown-item" href="">Đăng xuất</a>
+          <a class="dropdown-item" href="{% url 'logout' %}">Đăng xuất</a>
+
             </div>
           </li>
         </ul>
@@ -183,8 +184,14 @@
                   <i class="fas fa-home"></i> <span>Dashboard</span>
                 </a>
               </li>
-
-              <!-- Ca làm việc -->
+<!-- Ca làm việc -->
+              <li>
+                <a href="{% url 'show_shift' %}">
+                  <i class="fas fa-clock"></i> <span>Ca làm việc</span>
+                </a>
+              </li>
+              
+              {% comment %} <!-- Ca làm việc -->
               <li class="submenu">
                 <a href="#">
                   <i class="fas fa-clock"></i> <span>Ca làm việc</span>
@@ -194,7 +201,7 @@
                   <li><a href="{% url 'show_shift' %}">Danh sách ca</a></li>
                   <li><a href="#">Ca của bạn</a></li>
                 </ul>
-              </li>
+              </li> {% endcomment %}
 
               <!-- Chấm công -->
               <li class="submenu">
@@ -203,10 +210,10 @@
                   <span class="menu-arrow"></span>
                 </a>
                 <ul>
-                  <li><a href="#">Check-in</a></li>
-                  <li><a href="#">Check-out</a></li>
-                  <li>
-                    <a href="#">Lịch sử chấm công</a>
+                <li>
+                    <a href="{% url 'attendance:my_history' %}"
+                      >Lịch sử chấm công</a
+                    >
                   </li>
                 </ul>
               </li>
@@ -219,7 +226,7 @@
                   <span class="menu-arrow"></span>
                 </a>
                 <ul>
-                  <li><a href="#">Bảng lương</a></li>
+                  <li><a href="{% url 'finance:my_payroll_list' %}">Bảng lương</a></li>
                 </ul>
               </li>
 

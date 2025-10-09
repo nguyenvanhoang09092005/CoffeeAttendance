@@ -13,6 +13,8 @@ import numpy as np
 import cv2
 
 import uuid
+from django.contrib.auth.decorators import login_required
+
 
 from .models import Attendance
 from employee.models import Employee, EmployeeFace
@@ -210,6 +212,133 @@ def attendance_manual(request):
         "employees": employees,
         "shifts": shifts
     })
+
+
+@login_required
+def my_attendance_history(request):
+    
+    # 1️⃣ Kiểm tra xem tài khoản có liên kết với employee không
+    if not hasattr(request.user, "employee_profile"):
+        messages.error(request, "Tài khoản của bạn chưa được liên kết với nhân viên trong hệ thống.")
+        return redirect("home")
+
+    employee = request.user.employee_profile  # chỉ dùng employee của chính user
+
+    # 2️⃣ Lấy ngày hiện tại và thông tin lọc
+    today = timezone.now().date()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    status_filter = request.GET.get("status")
+
+    try:
+        if start_date and end_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        else:
+            start_date = today.replace(day=1)
+            end_date = today
+    except ValueError:
+        start_date = today.replace(day=1)
+        end_date = today
+
+    # 3️⃣ Truy vấn dữ liệu chấm công CHỈ của nhân viên này
+    attendances = (
+        Attendance.objects.filter(
+            employee=employee,
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        )
+        .select_related("shift", "matched_face")
+        .order_by("-created_at")
+    )
+
+    # 4️⃣ Lọc theo trạng thái nếu có
+    if status_filter:
+        if status_filter == "checked_in":
+            attendances = attendances.filter(check_in_time__isnull=False, check_out_time__isnull=True)
+        elif status_filter == "checked_out":
+            attendances = attendances.filter(check_out_time__isnull=False)
+        elif status_filter == "complete":
+            attendances = attendances.filter(check_in_time__isnull=False, check_out_time__isnull=False)
+        elif status_filter == "late":
+            attendances = [a for a in attendances if getattr(a, "is_late", False)]
+        elif status_filter == "early":
+            attendances = [a for a in attendances if getattr(a, "left_early", False)]
+
+    # 5️⃣ Xử lý dữ liệu hiển thị & thống kê
+    data = []
+    total_work_hours = total_late_count = total_early_count = total_complete_days = 0
+
+    for att in attendances:
+        # Xác định trạng thái
+        if not att.check_in_time and not att.check_out_time:
+            status_text = "Chưa chấm công"
+        elif not att.check_out_time:
+            status_text = "Chưa check-out"
+        elif getattr(att, "is_late", False) and getattr(att, "left_early", False):
+            status_text = "Đi trễ & về sớm"
+            total_late_count += 1
+            total_early_count += 1
+        elif getattr(att, "is_late", False):
+            status_text = "Đi trễ"
+            total_late_count += 1
+        elif getattr(att, "left_early", False):
+            status_text = "Về sớm"
+            total_early_count += 1
+        else:
+            status_text = "Đúng giờ"
+
+        # Tính giờ làm việc
+        hours = None
+        if att.check_in_time and att.check_out_time:
+            delta = att.check_out_time - att.check_in_time
+            hours = round(delta.total_seconds() / 3600, 2)
+            total_work_hours += hours
+            total_complete_days += 1
+
+        # Kiểm tra vị trí
+        location_status = "Đúng vị trí"
+        if att.distance_meters and att.distance_meters > 50:
+            location_status = "Sai vị trí"
+
+        # Ngày trong tuần
+        day_of_week = [
+            "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"
+        ][att.created_at.weekday()]
+
+        data.append({
+            "id": att.id,
+            "date": att.created_at.strftime("%d/%m/%Y"),
+            "day_of_week": day_of_week,
+            "shift": att.shift.name if att.shift else "Không có ca",
+            "check_in": att.check_in_time.strftime("%H:%M:%S") if att.check_in_time else "-",
+            "check_out": att.check_out_time.strftime("%H:%M:%S") if att.check_out_time else "-",
+            "hours": hours,
+            "status": status_text,
+            "location_status": location_status,
+            "face_image": att.face_image.url if att.face_image else None,
+            "distance": f"{att.distance_meters}m" if att.distance_meters else "-",
+        })
+
+    total_days = len(attendances)
+    avg_work_hours = round(total_work_hours / total_complete_days, 2) if total_complete_days > 0 else 0
+
+    context = {
+        "employee": employee,
+        "data": data,
+        "start_date": start_date,
+        "end_date": end_date,
+        "stats": {
+            "total_days": total_days,
+            "total_work_hours": round(total_work_hours, 2),
+            "avg_work_hours": avg_work_hours,
+            "total_late_count": total_late_count,
+            "total_early_count": total_early_count,
+        },
+    }
+
+    return render(request, "staff/Attendance/my_history.html", context)
+
 
 # --------- Check-in / Check-out ----------
 def attendance_toggle(request, shift_id=None):

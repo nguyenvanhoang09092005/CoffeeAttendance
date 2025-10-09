@@ -1,93 +1,13 @@
-{% extends "staff/Dashboard/base.html" %} {% load static %} {% block body %}
-<div class="page-wrapper">
-  <div class="content container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0 rounded-4 text-center p-5">
-          <!-- Icon animation -->
-          <div class="mb-4">
-            <div class="success-checkmark">
-              <div class="check-icon">
-                <span class="icon-line line-tip"></span>
-                <span class="icon-line line-long"></span>
-                <div class="icon-circle"></div>
-                <div class="icon-fix"></div>
-              </div>
-            </div>
-          </div>
+{% extends "staff/Dashboard/base.html" %}
+{% load static %}
+{% block body %}
 
-          <!-- Nội dung -->
-          {% if attendance.check_out_time %}
-          <h2 class="fw-bold text-success mb-3">✅ Check-out thành công!</h2>
-          <p class="text-muted">
-            Xin chào <b>{{ attendance.employee }}</b> 👋<br />
-            Bạn đã hoàn tất ca làm
-            <span class="fw-bold text-primary"
-              >{{ attendance.shift.name }}</span
-            >
-          </p>
-          {% else %}
-          <h2 class="fw-bold text-success mb-3">✅ Check-in thành công!</h2>
-          <p class="text-muted">
-            Xin chào <b>{{ attendance.employee }}</b> 👋<br />
-            Bạn đã bắt đầu ca làm:
-            <span class="fw-bold text-primary"
-              >{{ attendance.shift.name }}</span
-            >
-          </p>
-          {% endif %}
-
-          <!-- Thông tin thời gian + vị trí -->
-          <div class="mt-4 text-start">
-            <p>
-              🕑 <b>Giờ vào:</b>
-              <b>{{ attendance.check_in_time|date:"H:i:s d/m/Y" }}</b>
-            </p>
-            {% if attendance.check_out_time %}
-            <p>
-              🕓 <b>Giờ ra:</b
-              ><b>{{ attendance.check_out_time|date:"H:i:s d/m/Y" }}</b>
-            </p>
-            {% endif %}
-            <p>📍 <b>Địa chỉ:</b> {{ attendance.location_note }}</p>
-
-            {% if attendance.distance_meters %}
-            <p>
-              📏 <b>Khoảng cách:</b>
-              {% if attendance.distance_meters < 1000 %} {{
-              attendance.distance_meters|floatformat:0 }} m {% else %} {%
-              widthratio attendance.distance_meters 1000 1 as km %} {{
-              km|floatformat:2 }} km {% endif %}
-            </p>
-            {% endif %}
-          </div>
-
-          <!-- Hình ảnh khuôn mặt -->
-          {% if attendance.face_image %}
-          <img
-            src="{{ attendance.face_image.url }}"
-            class="rounded border shadow-sm mt-3"
-            style="max-width: 320px; aspect-ratio: 4/3; object-fit: cover"
-          />
-          {% endif %}
-
-          <!-- Nút -->
-          <div class="mt-4">
-            <a
-              href="{% url 'attendance:attendance_list' %}"
-              class="btn btn-primary px-4"
-            >
-              🔙 Về danh sách chấm công
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CSS cho icon check thành công -->
 <style>
+  .page-wrapper {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+  }
+  
   .success-checkmark {
     width: 80px;
     height: 80px;
@@ -97,21 +17,18 @@
     position: relative;
     animation: pop 0.5s ease-in-out forwards;
   }
+  
   @keyframes pop {
-    0% {
-      transform: scale(0.6);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
   }
+  
   .check-icon {
     position: relative;
     width: 80px;
     height: 80px;
   }
+  
   .icon-line {
     height: 5px;
     background-color: #28a745;
@@ -119,6 +36,7 @@
     border-radius: 2px;
     position: absolute;
   }
+  
   .line-tip {
     width: 25px;
     left: 14px;
@@ -126,6 +44,7 @@
     transform: rotate(45deg);
     animation: lineTip 0.3s ease forwards 0.5s;
   }
+  
   .line-long {
     width: 47px;
     right: 8px;
@@ -133,22 +52,17 @@
     transform: rotate(-45deg);
     animation: lineLong 0.3s ease forwards 0.8s;
   }
+  
   @keyframes lineTip {
-    from {
-      width: 0;
-    }
-    to {
-      width: 25px;
-    }
+    from { width: 0; }
+    to { width: 25px; }
   }
+  
   @keyframes lineLong {
-    from {
-      width: 0;
-    }
-    to {
-      width: 47px;
-    }
+    from { width: 0; }
+    to { width: 47px; }
   }
+  
   .icon-circle {
     top: -4px;
     left: -4px;
@@ -159,4 +73,191 @@
     position: absolute;
   }
 </style>
+
+<div class="page-wrapper">
+  <div class="content container-fluid py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        
+        <!-- Main Success Card -->
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+          <div class="card-body p-4 p-md-5 text-center">
+            
+            <!-- Icon animation -->
+            <div class="mb-4">
+              <div class="success-checkmark">
+                <div class="check-icon">
+                  <span class="icon-line line-tip"></span>
+                  <span class="icon-line line-long"></span>
+                  <div class="icon-circle"></div>
+                  <div class="icon-fix"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nội dung -->
+            {% if attendance.check_out_time %}
+            <h2 class="fw-bold text-success mb-3 h1">✅ Check-out thành công!</h2>
+            <p class="text-muted fs-5">
+              Xin chào <b class="text-dark">{{ attendance.employee }}</b> 👋<br />
+              Bạn đã hoàn tất ca làm
+              <span class="fw-bold text-primary">{{ attendance.shift.name }}</span>
+            </p>
+            {% else %}
+            <h2 class="fw-bold text-success mb-3 h1">✅ Check-in thành công!</h2>
+            <p class="text-muted fs-5">
+              Xin chào <b class="text-dark">{{ attendance.employee }}</b> 👋<br />
+              Bạn đã bắt đầu ca làm:
+              <span class="fw-bold text-primary">{{ attendance.shift.name }}</span>
+            </p>
+            {% endif %}
+
+            <!-- Thông tin thời gian + vị trí -->
+            <div class="bg-light rounded-3 p-4 text-start mt-4">
+              <p class="mb-3 d-flex align-items-center">
+                <span class="badge bg-success me-3" style="font-size: 1.2rem;">🕑</span>
+                <span>
+                  <strong>Giờ vào:</strong>
+                  <br>
+                  <b class="text-dark" style="font-family: 'Courier New', monospace;">
+                    {{ attendance.check_in_time|date:"H:i:s d/m/Y" }}
+                  </b>
+                </span>
+              </p>
+              
+              {% if attendance.check_out_time %}
+              <p class="mb-3 d-flex align-items-center">
+                <span class="badge bg-danger me-3" style="font-size: 1.2rem;">🕓</span>
+                <span>
+                  <strong>Giờ ra:</strong>
+                  <br>
+                  <b class="text-dark" style="font-family: 'Courier New', monospace;">
+                    {{ attendance.check_out_time|date:"H:i:s d/m/Y" }}
+                  </b>
+                </span>
+              </p>
+              {% endif %}
+              
+              <p class="mb-3 d-flex align-items-start">
+                <span class="badge bg-primary me-3" style="font-size: 1.2rem;">📍</span>
+                <span>
+                  <strong>Địa chỉ:</strong>
+                  <br>
+                  <span class="text-dark">{{ attendance.location_note }}</span>
+                </span>
+              </p>
+
+              {% if attendance.distance_meters %}
+              <p class="mb-0 d-flex align-items-center">
+                <span class="badge bg-info me-3" style="font-size: 1.2rem;">📏</span>
+                <span>
+                  <strong>Khoảng cách:</strong>
+                  <br>
+                  <b class="text-dark">
+                    {% if attendance.distance_meters < 1000 %}
+                      {{ attendance.distance_meters|floatformat:0 }} m
+                    {% else %}
+                      {% widthratio attendance.distance_meters 1000 1 as km %}
+                      {{ km|floatformat:2 }} km
+                    {% endif %}
+                  </b>
+                </span>
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- Hình ảnh khuôn mặt -->
+            {% if attendance.face_image %}
+            <div class="mt-4">
+              <img
+                src="{{ attendance.face_image.url }}"
+                class="img-fluid rounded-4 border shadow-sm"
+                style="max-width: 350px; aspect-ratio: 4/3; object-fit: cover;"
+                alt="Face Image"
+              />
+            </div>
+            {% endif %}
+
+            <!-- Nút -->
+            <div class="mt-4 d-grid gap-2 d-md-flex justify-content-md-center">
+              <a
+                href="{% url 'attendance:attendance_list' %}"
+                class="btn btn-primary btn-lg px-4 fw-semibold rounded-3"
+              >
+                <i class="fas fa-arrow-left me-2"></i>
+                Về danh sách chấm công
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Cards Row -->
+        <div class="row g-3">
+          
+          <!-- Status Card -->
+          <div class="col-6">
+            <div class="card shadow-sm border-0 rounded-3 text-center h-100">
+              <div class="card-body py-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                  <i class="fas fa-calendar-check text-primary fs-3"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mb-2">Trạng thái</div>
+                <div class="fw-bold text-dark h5 mb-0">
+                  {% if attendance.check_out_time %}
+                    Đã hoàn tất
+                  {% else %}
+                    Đang làm việc
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shift Card -->
+          <div class="col-6">
+            <div class="card shadow-sm border-0 rounded-3 text-center h-100">
+              <div class="card-body py-4">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                  <i class="fas fa-clock text-success fs-3"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mb-2">Ca làm việc</div>
+                <div class="fw-bold text-dark h5 mb-0">{{ attendance.shift.name }}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Additional Info Card -->
+        <div class="card shadow-sm border-0 border-start border-success border-4 rounded-3 mt-4">
+          <div class="card-body p-4">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
+                <i class="fas fa-info-circle text-success fs-5"></i>
+              </div>
+              <div>
+                <strong class="d-block mb-2 text-dark">
+                  {% if attendance.check_out_time %}
+                    Cảm ơn bạn đã hoàn thành ca làm việc!
+                  {% else %}
+                    Chúc bạn một ngày làm việc hiệu quả!
+                  {% endif %}
+                </strong>
+                <p class="mb-0 text-muted">
+                  {% if attendance.check_out_time %}
+                    Bạn đã hoàn tất ca làm việc hôm nay. Hãy nghỉ ngơi và chuẩn bị cho ca làm việc tiếp theo. Nếu có bất kỳ vấn đề gì, vui lòng liên hệ với quản lý.
+                  {% else %}
+                    Nhớ check-out khi kết thúc ca để hệ thống ghi nhận đầy đủ thông tin. Chúc bạn một ngày làm việc vui vẻ và hiệu quả!
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

@@ -1,4 +1,31 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block body %}
+
+<style>
+  .delete-card {
+    box-shadow: 0 4px 20px rgba(220, 53, 69, 0.15);
+  }
+  
+  .warning-box {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .info-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+</style>
+
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -19,43 +46,156 @@
       </div>
     </div>
 
-    <!-- Confirm Delete -->
+    <!-- Content -->
     <div class="row">
-      <div class="col-md-6 offset-md-3">
+      <div class="col-sm-12">
+        <!-- Icon cảnh báo -->
         <div class="card">
-          <div class="card-body text-center">
-            <i
-              class="fas fa-exclamation-triangle text-warning"
-              style="font-size: 4rem"
-            ></i>
-            <h4 class="mt-3">Xác nhận xóa doanh thu</h4>
-            <p class="text-muted">
-              Bạn có chắc chắn muốn xóa doanh thu này không?
+          <div class="card-body text-center py-4">
+            <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem"></i>
+            <h4 class="mt-3 mb-2">Xác nhận xóa doanh thu</h4>
+            <p class="text-muted mb-0">
+              Bạn có chắc chắn muốn xóa phiếu doanh thu này không?
             </p>
+          </div>
+        </div>
 
-            <div class="alert alert-success text-left">
-              <strong>Thông tin doanh thu:</strong><br />
-              <strong>Nguồn:</strong> {{ revenue.source }}<br />
-              <strong>Loại:</strong> {{ revenue.get_category_display }}<br />
-              <strong>Số tiền:</strong>
-              <span class="text-success"
-                >{{ revenue.amount|floatformat:0 }} VND</span
-              ><br />
-              <strong>Ngày:</strong> {{ revenue.revenue_date|date:"d/m/Y" }}
+        <!-- Thông tin doanh thu -->
+        <div class="card mt-3">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin phiếu doanh thu</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-row">
+                  <label class="text-muted mb-1">Ngày</label>
+                  <div class="font-weight-bold">{{ revenue.revenue_date|date:"d/m/Y" }}</div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="info-row">
+                  <label class="text-muted mb-1">Ca</label>
+                  <div>
+                    {% if revenue.shift == 'sang' %}
+                    <span class="badge badge-info">Sáng</span>
+                    {% elif revenue.shift == 'chieu' %}
+                    <span class="badge badge-warning">Chiều</span>
+                    {% else %}
+                    <span class="badge badge-dark">Tối</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="info-row">
+                  <label class="text-muted mb-1">Tiền mặt</label>
+                  <div class="{% if revenue.tien_mat < 0 %}text-danger{% else %}text-success{% endif %} font-weight-bold">
+                    {{ revenue.tien_mat|floatformat:0|intcomma }} VND
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="info-row">
+                  <label class="text-muted mb-1">Chuyển khoản</label>
+                  <div class="text-success font-weight-bold">{{ revenue.chuyen_khoan|floatformat:0|intcomma }} VND</div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="info-row">
+                  <label class="text-muted mb-1">VNPay</label>
+                  <div class="text-success font-weight-bold">{{ revenue.vnpay|floatformat:0|intcomma }} VND</div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="info-row">
+                  <label class="text-muted mb-1">Nợ</label>
+                  <div class="text-warning font-weight-bold">{{ revenue.no|floatformat:0|intcomma }} VND</div>
+                </div>
+              </div>
+
+              <div class="col-12"><hr></div>
+
+              <div class="col-md-4">
+                <div class="alert alert-primary mb-0">
+                  <label class="text-muted mb-1">Tổng thu</label>
+                  <h4 class="mb-0 text-primary">{{ revenue.tong|floatformat:0|intcomma }} VND</h4>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="alert alert-danger mb-0">
+                  <label class="text-muted mb-1">Tổng chi</label>
+                  <h4 class="mb-0 text-danger">{{ revenue.chi|floatformat:0|intcomma }} VND</h4>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="alert alert-success mb-0">
+                  <label class="text-muted mb-1">Danh thu ròng</label>
+                  <h4 class="mb-0 {% if revenue.danh_thu_rong < 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ revenue.danh_thu_rong|floatformat:0|intcomma }} VND
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cảnh báo ảnh hưởng -->
+        {% if revenue.expenses.count > 0 %}
+        <div class="card mt-3 border-warning">
+          <div class="card-body">
+            <div class="alert alert-warning mb-0">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-exclamation-triangle me-3 mt-1" style="font-size: 1.5rem;"></i>
+                <div>
+                  <h6 class="alert-heading mb-2">Ảnh hưởng khi xóa:</h6>
+                  <ul class="mb-0 ps-3">
+                    <li>Phiếu doanh thu này có <strong>{{ revenue.expenses.count }}</strong> chi phí liên kết</li>
+                    <li>Tất cả chi phí liên quan sẽ bị xóa cùng</li>
+                    <li>Hành động này không thể hoàn tác</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Form xác nhận xóa -->
+        <div class="card mt-3 delete-card">
+          <div class="card-body">
+            <div class="warning-box">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-info-circle me-3 mt-1 text-warning" style="font-size: 1.5rem;"></i>
+                <div>
+                  <h6 class="mb-2">Lưu ý quan trọng:</h6>
+                  <ul class="mb-0 ps-3">
+                    <li>Sau khi xóa, dữ liệu sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
+                    <li>Hành động này không thể hoàn tác</li>
+                    <li>Vui lòng kiểm tra kỹ trước khi xác nhận</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             <form method="post">
               {% csrf_token %}
-              <div class="mt-4">
-                <a
-                  href="{% url 'finance:revenue_list' %}"
-                  class="btn btn-secondary mr-2"
-                >
-                  <i class="fas fa-times"></i> Hủy
-                </a>
-                <button type="submit" class="btn btn-danger">
-                  <i class="fas fa-trash"></i> Xác nhận xóa
-                </button>
+              <div class="row">
+                <div class="col-12 text-right">
+                  <a href="{% url 'finance:revenue_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                  </a>
+                  <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Xác nhận xóa
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -69,6 +209,7 @@
   </footer>
 </div>
 
+<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>

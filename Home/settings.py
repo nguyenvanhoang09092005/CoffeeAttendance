@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-SITE_URL = "https://5494dcde16c1.ngrok-free.app "
+SITE_URL = "https://89d19461ba1a.ngrok-free.app "
 
 
 

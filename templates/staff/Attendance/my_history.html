@@ -1,0 +1,608 @@
+{% extends 'staff/Dashboard/base.html' %}
+{% load static %}
+{% block body %}
+   
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Lịch sử chấm công của tôi</h3>
+          <ul class="breadcrumb">
+            {% comment %} <li class="breadcrumb-item">
+              <a href="{% url 'home' %}">Trang chủ</a>
+            </li> {% endcomment %}
+            <li class="breadcrumb-item active">Lịch sử chấm công</li>
+          </ul>
+        </div>
+        {% comment %} <div class="col-auto">
+          <a href="{% url 'attendance:toggle' %}" class="btn btn-primary">
+            <i class="fas fa-clock"></i> Chấm công ngay
+          </a>
+        </div> {% endcomment %}
+      </div>
+    </div>
+
+    <!-- Thông tin nhân viên -->
+   <div class="card mb-3 shadow-sm border-0 rounded-3">
+  <div class="card-body ">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h5 class="mb-1">👤 {{ employee.first_name }} {{ employee.last_name }}</h5>
+        <p class="text-muted mb-0">
+          Mã NV: <strong>{{ employee.employee_id }}</strong>
+        </p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <p class="mb-1">
+          <strong>Chức vụ:</strong>
+          <span class="badge bg-info">{{ employee.get_position_display|default:"Nhân viên" }}</span>
+
+        </p>
+       <p class="mb-0">
+  <strong>Email:</strong> {{ employee.email|default:"Chưa có" }}
+</p>
+<p class="mb-0">
+  <strong>Số điện thoại:</strong> {{ employee.phone_number|default:"-" }}
+</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Thống kê tổng quan -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="card shadow-sm border-left-primary">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                  Tổng số ngày
+                </div>
+                <div class="h4 mb-0 font-weight-bold text-gray-800">{{ stats.total_days }}</div>
+                <small class="text-muted">Đầy đủ: {{ stats.total_complete_days }}</small>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-calendar fa-2x text-primary"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-left-success">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                  Tổng giờ làm
+                </div>
+                <div class="h4 mb-0 font-weight-bold text-gray-800">{{ stats.total_work_hours }}h</div>
+                <small class="text-muted">TB: {{ stats.avg_work_hours }}h/ngày</small>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-clock fa-2x text-success"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-left-warning">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                  Đi muộn
+                </div>
+                <div class="h4 mb-0 font-weight-bold text-gray-800">{{ stats.total_late_count }}</div>
+                <small class="text-muted">{{ stats.late_rate }}%</small>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-left-info">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                  Về sớm
+                </div>
+                <div class="h4 mb-0 font-weight-bold text-gray-800">{{ stats.total_early_count }}</div>
+                <small class="text-muted">{{ stats.early_rate }}%</small>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-running fa-2x text-info"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bộ lọc tìm kiếm -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Trạng thái</label>
+            <select name="status" class="form-control">
+              <option value="">-- Tất cả --</option>
+              <option value="complete" {% if request.GET.status == "complete" %}selected{% endif %}>Đầy đủ</option>
+              <option value="checked_in" {% if request.GET.status == "checked_in" %}selected{% endif %}>Chưa check-out</option>
+              <option value="late" {% if request.GET.status == "late" %}selected{% endif %}>Đi trễ</option>
+              <option value="early" {% if request.GET.status == "early" %}selected{% endif %}>Về sớm</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Lọc</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bảng danh sách chấm công -->
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead class="thead-light">
+                  <tr>
+                    <th>STT</th>
+                    <th>Ngày</th>
+                    <th>Ca làm</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Số giờ</th>
+                    <th>Trạng thái</th>
+                    <th>Vị trí</th>
+                    <th>Xác thực</th>
+                    <th>Ghi chú</th>
+                    <th>Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in data %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                      <strong>{{ record.date }}</strong><br>
+                      <small class="text-muted">{{ record.day_of_week }}</small>
+                    </td>
+                    <td>
+                      <strong>{{ record.shift }}</strong><br>
+                      <small class="text-muted">{{ record.shift_time }}</small>
+                    </td>
+                    <td>
+                      {% if record.check_in != '-' %}
+                        <span class="badge bg-success">{{ record.check_in }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if record.check_out != '-' %}
+                        <span class="badge bg-info">{{ record.check_out }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if record.hours %}
+                        <strong>{{ record.hours }}h</strong>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if "trễ" in record.status or "muộn" in record.status %}
+                        <span class="badge bg-danger">{{ record.status }}</span>
+                      {% elif "sớm" in record.status %}
+                        <span class="badge bg-warning">{{ record.status }}</span>
+                      {% elif "Chưa" in record.status %}
+                        <span class="badge bg-secondary">{{ record.status }}</span>
+                      {% else %}
+                        <span class="badge bg-success">{{ record.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <small>{{ record.location }}</small>
+                      {% if record.distance != "-" %}
+                        <span class="badge {% if 'Sai' in record.location_status %}bg-danger{% else %}bg-success{% endif %} badge-sm">
+                          {{ record.distance }}
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+  {% if record.face_image %}
+    <img src="{{ record.face_image }}" 
+         alt="Face" 
+         class="rounded" 
+         style="width:40px; height:40px; object-fit:cover;">
+  {% else %}
+    -
+  {% endif %}
+</td>
+
+                    <td>
+                      <small>{{ record.note|default:"-" }}</small>
+                    </td>
+                    <td class="text-center">
+                      <button type="button" 
+                              class="btn btn-sm btn-outline-primary view-detail" 
+                              data-id="{{ record.id }}"
+                              data-date="{{ record.date }}"
+                              data-shift="{{ record.shift }}"
+                              data-shift-time="{{ record.shift_time }}"
+                              data-checkin="{{ record.check_in }}"
+                              data-checkout="{{ record.check_out }}"
+                              data-hours="{{ record.hours }}"
+                              data-status="{{ record.status }}"
+                              data-location="{{ record.location }}"
+                              data-distance="{{ record.distance }}"
+                              data-face="{{ record.face_verified }}"
+                              data-method="{{ record.method }}"
+                              data-note="{{ record.note }}"
+                              data-image="{{ record.face_image }}">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="11" class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-3x mb-2"></i><br>
+                      Không có dữ liệu chấm công trong khoảng thời gian này
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thống kê theo tuần -->
+    {% if weekly_stats %}
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">📊 Thống kê theo tuần</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tuần</th>
+                    <th class="text-center">Số ngày</th>
+                    <th class="text-center">Tổng giờ</th>
+                    <th class="text-center">Trung bình</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for week in weekly_stats %}
+                  <tr>
+                    <td>{{ week.week }}</td>
+                    <td class="text-center">{{ week.days }}</td>
+                    <td class="text-center"><strong>{{ week.hours }}h</strong></td>
+                    <td class="text-center">{{ week.avg }}h</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Modal Chi tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-gradient-primary text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="detailModalLabel">
+          <i class="fas fa-clipboard-check me-2"></i>
+          Chi tiết chấm công
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body p-0" id="detailContent">
+        <!-- Nội dung chi tiết sẽ được load bằng JS -->
+      </div>
+      
+      <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <footer class="text-center py-3">
+    <p class="mb-0">Bản quyền © Đá Cuội</p>
+  </footer>
+</div>
+
+<!-- CSS Custom -->
+<style>
+.border-left-primary {
+  border-left: 4px solid #4e73df !important;
+}
+.border-left-success {
+  border-left: 4px solid #1cc88a !important;
+}
+.border-left-warning {
+  border-left: 4px solid #f6c23e !important;
+}
+.border-left-info {
+  border-left: 4px solid #36b9cc !important;
+}
+.badge-sm {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+}
+</style>
+
+<!-- JS -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+<script>
+$(document).ready(function () {
+  // Xem chi tiết chấm công
+  $(".view-detail").on("click", function () {
+    let data = $(this).data();
+    
+    let html = `
+      <div class="container-fluid p-4">
+        <!-- Thông tin ngày và ca làm -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-box bg-primary text-white rounded-circle me-3" style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-calendar-day fa-lg"></i>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block">Ngày làm việc</small>
+                    <h6 class="mb-0 fw-bold">${data.date}</h6>
+                    <small class="text-muted">${data.dayOfWeek || ''}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-box bg-info text-white rounded-circle me-3" style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-clock fa-lg"></i>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block">Ca làm việc</small>
+                    <h6 class="mb-0 fw-bold">${data.shift}</h6>
+                    <small class="text-muted">${data.shiftTime}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Check-in và Check-out -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-box bg-success text-white rounded-circle me-3" style="width:55px;height:55px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-sign-in-alt fa-lg"></i>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block mb-1">Giờ vào</small>
+                    <h4 class="mb-0 text-success fw-bold">${data.checkin || '<span class="text-muted">--:--</span>'}</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-box bg-danger text-white rounded-circle me-3" style="width:55px;height:55px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block mb-1">Giờ ra</small>
+                    <h4 class="mb-0 text-danger fw-bold">${data.checkout || '<span class="text-muted">--:--</span>'}</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông tin chi tiết -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+              <i class="fas fa-info-circle text-primary me-2"></i>Thông tin chi tiết
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <i class="fas fa-hourglass-half text-warning me-2"></i>
+                  <small class="text-muted d-block">Số giờ làm việc</small>
+                  <strong class="text-primary">${data.hours || '0'} giờ</strong>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <i class="fas fa-info-circle text-info me-2"></i>
+                  <small class="text-muted d-block">Trạng thái</small>
+                  <strong>${data.status}</strong>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <i class="fas fa-user-check text-success me-2"></i>
+                  <small class="text-muted d-block">Xác thực khuôn mặt</small>
+                  <strong>
+                    ${data.face === 'True' || data.face === true 
+                      ? '<span class="text-success"><i class="fas fa-check-circle"></i> Đã xác thực</span>' 
+                      : '<span class="text-danger"><i class="fas fa-times-circle"></i> Chưa xác thực</span>'
+                    }
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vị trí và phương thức -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-2">
+                  <i class="fas fa-map-marker-alt text-danger me-2"></i>Vị trí chấm công
+                </h6>
+                <p class="mb-1 text-dark">${data.location || 'Không xác định'}</p>
+                <small class="text-muted">
+                  <i class="fas fa-ruler me-1"></i>Khoảng cách: 
+                  <strong>${data.distance || 'N/A'}</strong>
+                </small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="mb-2">
+                  <i class="fas fa-cogs text-secondary me-2"></i>Phương thức
+                </h6>
+                <p class="mb-0 text-dark">${data.method || 'Không xác định'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${data.note && data.note !== 'None' && data.note !== '-' ? `
+        <!-- Ghi chú -->
+        <div class="card border-0 bg-warning bg-opacity-10 mb-4">
+          <div class="card-body">
+            <h6 class="mb-2">
+              <i class="fas fa-sticky-note text-warning me-2"></i>Ghi chú
+            </h6>
+            <p class="mb-0">${data.note}</p>
+          </div>
+        </div>
+        ` : ''}
+
+        ${data.image && data.image !== 'None' ? `
+        <!-- Ảnh chấm công -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 py-3">
+            <h6 class="mb-0 fw-bold">
+              <i class="fas fa-camera text-primary me-2"></i>Ảnh xác thực
+            </h6>
+          </div>
+          <div class="card-body text-center">
+            <img src="${data.image}" 
+                 alt="Ảnh chấm công" 
+                 class="img-fluid rounded shadow" 
+                 style="max-width:350px; max-height:350px; object-fit:cover;">
+          </div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+    
+    $("#detailContent").html(html);
+    $("#detailModal").modal("show");
+  });
+});
+</script>
+
+<style>
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+.icon-box {
+  flex-shrink: 0;
+}
+
+.detail-item {
+  padding: 10px 0;
+}
+
+.detail-item i {
+  font-size: 1.1rem;
+}
+
+.modal-content {
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+}
+
+.card {
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+</style>
+
+{% endblock %}

@@ -32,25 +32,7 @@ def add_employee(request):
         employment_status = request.POST.get('employment_status', 'Active')
         resignation_date = request.POST.get('resignation_date')
 
-        # Lưu nhân viên
-        employee = Employee.objects.create(
-            first_name=first_name,
-            last_name=last_name,
-            email = email,
-            employee_id=employee_id,
-            gender=gender,
-            date_of_birth=date_of_birth,
-            position=position,
-            joining_date=joining_date,
-            mobile_number=mobile_number,
-            address = address,
-            employee_image=employee_image,
-            bank_account_number = bank_account_number,
-            bank_name = bank_name,
-            employment_status = employment_status,
-            resignation_date = resignation_date,
-
-        )
+       
         # 👉 Tạo User (username = email hoặc employee_id)
         username = email if email else f"user_{mobile_number}"
         default_password = "12345678"  # mật khẩu mặc định

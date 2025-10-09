@@ -1,5 +1,8 @@
 from django import forms
-from .models import ExpenseCategory, Expense, Revenue, PayrollSummary, PayrollDetail
+from .models import (
+    ExpenseCategory, Expense, RevenueExpense, Revenue, 
+    PayrollSummary, PayrollDetail
+)
 from employee.models import Employee
 
 
@@ -24,7 +27,7 @@ class ExpenseCategoryForm(forms.ModelForm):
         }
 
 
-# ======= 2. FORM CHI PHÍ =======
+# ======= 2A. FORM CHI PHÍ ĐỘC LẬP =======
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
@@ -75,39 +78,84 @@ class ExpenseForm(forms.ModelForm):
         }
 
 
-# ======= 3. FORM DOANH THU =======
-class RevenueForm(forms.ModelForm):
+# ======= 2B. FORM CHI PHÍ LIÊN KẾT DOANH THU =======
+class RevenueExpenseForm(forms.ModelForm):
+    """Form nhập chi phí từ phiếu doanh thu (chỉ 3 trường)"""
     class Meta:
-        model = Revenue
-        fields = [
-            "source",
-            "category",
-            "description",
-            "amount",
-            "revenue_date",
-            "note"
-        ]
+        model = RevenueExpense
+        fields = ["category", "description", "amount", "note"]
         widgets = {
-            "source": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Nguồn thu (VD: Bán hàng, Dịch vụ...)"
-            }),
             "category": forms.Select(attrs={
                 "class": "form-select"
             }),
-            "description": forms.Textarea(attrs={
+            "description": forms.TextInput(attrs={
                 "class": "form-control",
-                "rows": 2,
-                "placeholder": "Mô tả chi tiết"
+                "placeholder": "Mô tả chi phí"
             }),
             "amount": forms.NumberInput(attrs={
                 "class": "form-control",
                 "placeholder": "0",
                 "step": "0.01"
             }),
+            "note": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 2,
+                "placeholder": "Ghi chú (nếu có)"
+            })
+        }
+        labels = {
+            "category": "Loại chi phí",
+            "description": "Mô tả",
+            "amount": "Số tiền (VND)",
+            "note": "Ghi chú"
+        }
+
+
+# ======= 3. FORM DOANH THU =======
+class RevenueForm(forms.ModelForm):
+    class Meta:
+        model = Revenue
+        fields = [
+            "revenue_date",
+            "shift",
+            "tien_mat",
+            "chuyen_khoan",
+            "vnpay",
+            "no",
+            "receipt_image",
+            "note"
+        ]
+        widgets = {
             "revenue_date": forms.DateInput(attrs={
                 "class": "form-control",
                 "type": "date"
+            }),
+            "shift": forms.Select(attrs={
+                "class": "form-select"
+            }),
+            "tien_mat": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "0",
+                "step": "0.01"
+            }),
+            "chuyen_khoan": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "0",
+                "step": "0.01"
+            }),
+            "vnpay": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "0",
+                "step": "0.01"
+            }),
+            "no": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "0",
+                "step": "0.01"
+            }),
+            "receipt_image": forms.FileInput(attrs={
+                "class": "form-control",
+                "accept": "image/*"
             }),
             "note": forms.Textarea(attrs={
                 "class": "form-control",
@@ -116,11 +164,13 @@ class RevenueForm(forms.ModelForm):
             })
         }
         labels = {
-            "source": "Nguồn thu",
-            "category": "Loại doanh thu",
-            "description": "Mô tả",
-            "amount": "Số tiền (VND)",
-            "revenue_date": "Ngày thu",
+            "revenue_date": "Ngày",
+            "shift": "Ca",
+            "tien_mat": "Tiền mặt (VND)",
+            "chuyen_khoan": "Chuyển khoản (VND)",
+            "vnpay": "VNPay (VND)",
+            "no": "Nợ (VND)",
+            "receipt_image": "Hình ảnh chứng từ",
             "note": "Ghi chú"
         }
 
@@ -278,8 +328,8 @@ class ExpenseFilterForm(forms.Form):
 
 # ======= 7. FORM TÌM KIẾM/LỌC DOANH THU =======
 class RevenueFilterForm(forms.Form):
-    category = forms.ChoiceField(
-        choices=[("", "Tất cả loại")] + Revenue.CATEGORY_CHOICES,
+    shift = forms.ChoiceField(
+        choices=[("", "Tất cả ca")] + Revenue._meta.get_field('shift').choices,
         required=False,
         widget=forms.Select(attrs={"class": "form-select"})
     )

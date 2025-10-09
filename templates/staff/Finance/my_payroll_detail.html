@@ -1,0 +1,535 @@
+{% extends 'staff/Dashboard/base.html' %}
+{% load static %}
+
+{% block body %}
+
+<style>
+  .info-card {
+    transition: transform 0.2s ease;
+  }
+  
+  .info-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .salary-box {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+
+  .border-opacity-25 {
+    --bs-border-opacity: 0.25;
+  }
+
+  .bg-opacity-10 {
+    --bs-bg-opacity: 0.1;
+  }
+
+  /* Print styles */
+  @media print {
+    .page-header,
+    .btn,
+    .breadcrumb,
+    .sidebar,
+    .header,
+    .navbar,
+    .alert {
+      display: none !important;
+    }
+    
+    .page-wrapper {
+      margin: 0 !important;
+      padding: 20px !important;
+    }
+    
+    .card {
+      box-shadow: none !important;
+      border: 1px solid #dee2e6 !important;
+      page-break-inside: avoid;
+    }
+    
+    .page-wrapper::before {
+      content: "PHIẾU LƯƠNG - ĐÁ CUỘI CAFÉ";
+      display: block;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .display-4 {
+      font-size: 2rem;
+    }
+    
+    h4 {
+      font-size: 1.25rem;
+    }
+    
+    .table {
+      font-size: 0.875rem;
+    }
+  }
+</style>
+
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">
+            <i class="fas fa-file-invoice-dollar me-2"></i>Chi tiết bảng lương
+          </h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'finance:my_payroll_list' %}">Bảng lương của tôi</a>
+            </li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+          </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <button onclick="window.print()" class="btn btn-success mr-2">
+            <i class="fas fa-print"></i> In phiếu lương
+          </button>
+          <a href="{% url 'finance:my_payroll_list' %}" class="btn add-btn">
+            <i class="fas fa-arrow-left"></i> Quay lại
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert trạng thái -->
+    {% if payroll.status == 'paid' %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <strong><i class="fas fa-check-circle me-2"></i>Đã thanh toán!</strong> 
+      Bảng lương này đã được thanh toán vào ngày {{ payroll.approved_at|date:"d/m/Y" }}.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% elif payroll.status == 'approved' %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+      <strong><i class="fas fa-info-circle me-2"></i>Đã phê duyệt!</strong> 
+      Bảng lương đang chờ thanh toán.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% elif payroll.status == 'pending' %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong><i class="fas fa-hourglass-half me-2"></i>Chờ phê duyệt!</strong> 
+      Bảng lương đang được xem xét.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="row">
+      
+      <!-- Left Column: Thông tin chung -->
+      <div class="col-lg-4 col-md-12">
+        <div class="card info-card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title text-white mb-0">
+              <i class="fas fa-info-circle me-2"></i>Thông tin chung
+            </h5>
+          </div>
+          <div class="card-body">
+            
+            <!-- Nhân viên -->
+            <div class="mb-3 pb-3 border-bottom">
+              <div class="d-flex align-items-center mb-2">
+                {% if payroll.employee.employee_image %}
+                  <img src="{{ payroll.employee.employee_image.url }}"
+                       alt="{{ payroll.employee.first_name }}"
+                       class="rounded-circle mr-3"
+                       width="60" height="60"
+                       style="object-fit: cover;">
+                {% else %}
+                  <div class="avatar-circle bg-primary-light text-primary mr-3"
+                       style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:24px; font-weight:bold;">
+                    {{ payroll.employee.first_name|slice:":1" }}{{ payroll.employee.last_name|slice:":1" }}
+                  </div>
+                {% endif %}
+                
+                <div>
+                  <h6 class="mb-1 font-weight-bold">
+                    {{ payroll.employee.first_name }} {{ payroll.employee.last_name }}
+                  </h6>
+                  <small class="text-muted d-block">
+                    <i class="fas fa-id-badge me-1"></i>Mã NV: {{ payroll.employee.employee_id }}
+                  </small>
+                  <small class="text-muted d-block">
+                    <i class="fas fa-briefcase me-1"></i>
+                    {{ payroll.employee.get_position_display|default:"Nhân viên" }}
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kỳ lương -->
+            <div class="mb-3 pb-3 border-bottom">
+              <p class="text-muted mb-2 small">
+                <i class="fas fa-calendar-alt me-2"></i>Kỳ lương
+              </p>
+              <div class="text-center">
+                <span class="badge badge-info px-3 py-2" style="font-size: 14px;">
+                  {{ payroll.start_date|date:"d/m/Y" }}
+                </span>
+                <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                <span class="badge badge-info px-3 py-2" style="font-size: 14px;">
+                  {{ payroll.end_date|date:"d/m/Y" }}
+                </span>
+              </div>
+              <small class="text-muted d-block mt-2 text-center">
+                Tổng: <strong>{{ payroll.total_days }}</strong> ngày công
+              </small>
+            </div>
+
+            <!-- Trạng thái -->
+            <div class="mb-3 pb-3 border-bottom">
+              <p class="text-muted mb-2 small">
+                <i class="fas fa-flag me-2"></i>Trạng thái
+              </p>
+              <div class="text-center">
+                {% if payroll.status == 'paid' %}
+                  <span class="badge badge-success w-100 py-2" style="font-size: 14px;">
+                    <i class="fas fa-check-circle me-1"></i>Đã thanh toán
+                  </span>
+                {% elif payroll.status == 'approved' %}
+                  <span class="badge badge-info w-100 py-2" style="font-size: 14px;">
+                    <i class="fas fa-thumbs-up me-1"></i>Đã duyệt
+                  </span>
+                {% elif payroll.status == 'pending' %}
+                  <span class="badge badge-warning w-100 py-2" style="font-size: 14px;">
+                    <i class="fas fa-hourglass-half me-1"></i>Chờ duyệt
+                  </span>
+                {% elif payroll.status == 'draft' %}
+                  <span class="badge badge-secondary w-100 py-2" style="font-size: 14px;">
+                    <i class="fas fa-pencil-alt me-1"></i>Nháp
+                  </span>
+                {% else %}
+                  <span class="badge badge-danger w-100 py-2" style="font-size: 14px;">
+                    <i class="fas fa-times-circle me-1"></i>Từ chối
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Người tạo -->
+            <div class="mb-3 pb-3 border-bottom">
+              <p class="text-muted mb-2 small">
+                <i class="fas fa-user-plus me-2"></i>Người tạo
+              </p>
+              <p class="mb-1 font-weight-bold">{{ payroll.created_by.username }}</p>
+              <small class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                {{ payroll.created_at|date:"d/m/Y H:i" }}
+              </small>
+            </div>
+
+            <!-- Người duyệt -->
+            {% if payroll.approved_by %}
+            <div class="mb-0">
+              <p class="text-muted mb-2 small">
+                <i class="fas fa-user-check me-2"></i>Người phê duyệt
+              </p>
+              <p class="mb-1 text-success font-weight-bold">
+                <i class="fas fa-check-circle me-1"></i>
+                {{ payroll.approved_by.username }}
+              </p>
+              <small class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                {{ payroll.approved_at|date:"d/m/Y H:i" }}
+              </small>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Tổng hợp lương -->
+      <div class="col-lg-8 col-md-12">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="card-title text-white mb-0">
+              <i class="fas fa-calculator me-2"></i>Tổng hợp lương
+            </h5>
+          </div>
+          <div class="card-body">
+            
+            <div class="row">
+              
+              <!-- Tổng ngày công -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-primary-light text-center">
+                  <div class="mb-2">
+                    <i class="fas fa-calendar-day fa-3x text-primary"></i>
+                  </div>
+                  <p class="text-muted mb-1 small">Tổng ngày công</p>
+                  <h3 class="mb-0 text-primary font-weight-bold">{{ payroll.total_days }}</h3>
+                  <small class="text-muted">ngày</small>
+                </div>
+              </div>
+
+              <!-- Tổng giờ làm -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-info-light text-center">
+                  <div class="mb-2">
+                    <i class="fas fa-clock fa-3x text-info"></i>
+                  </div>
+                  <p class="text-muted mb-1 small">Tổng giờ làm</p>
+                  <h3 class="mb-0 text-info font-weight-bold">{{ payroll.total_hours|floatformat:1 }}</h3>
+                  <small class="text-muted">giờ</small>
+                </div>
+              </div>
+
+              <!-- Lương cơ bản -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-primary-light">
+                  <p class="text-muted mb-2 small">
+                    <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                    Lương cơ bản
+                  </p>
+                  <h4 class="mb-0 text-primary font-weight-bold">
+                    {{ payroll.base_salary|floatformat:0|default:"0" }} VND
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Phụ cấp -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-info-light">
+                  <p class="text-muted mb-2 small">
+                    <i class="fas fa-gift me-2 text-info"></i>
+                    Phụ cấp
+                  </p>
+                  <h4 class="mb-0 text-info font-weight-bold">
+                    {{ payroll.allowance|floatformat:0|default:"0" }} VND
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Thưởng -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-warning-light">
+                  <p class="text-muted mb-2 small">
+                    <i class="fas fa-star me-2 text-warning"></i>
+                    Thưởng
+                  </p>
+                  <h4 class="mb-0 text-warning font-weight-bold">
+                    {{ payroll.bonus|floatformat:0|default:"0" }} VND
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Khấu trừ -->
+              <div class="col-md-6 col-sm-6 mb-3">
+                <div class="salary-box bg-danger-light">
+                  <p class="text-muted mb-2 small">
+                    <i class="fas fa-minus-circle me-2 text-danger"></i>
+                    Khấu trừ
+                  </p>
+                  <h4 class="mb-0 text-danger font-weight-bold">
+                    {{ payroll.deduction|floatformat:0|default:"0" }} VND
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Thực nhận -->
+              <div class="col-12">
+                <div class="salary-box bg-success-light text-center border border-success">
+                  <p class="text-muted mb-2">
+                    <i class="fas fa-hand-holding-usd me-2"></i>
+                    <strong>TỔNG LƯƠNG THỰC NHẬN</strong>
+                  </p>
+                  <h1 class="mb-0 text-success font-weight-bold display-4">
+                    {{ payroll.net_salary|floatformat:0|default:"0" }} <small style="font-size: 1.5rem;">VND</small>
+                  </h1>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Ghi chú -->
+            {% if payroll.note %}
+            <div class="mt-3 p-3 bg-light rounded border">
+              <p class="text-muted mb-2 small font-weight-bold">
+                <i class="fas fa-sticky-note me-2 text-warning"></i>Ghi chú
+              </p>
+              <p class="mb-0">{{ payroll.note }}</p>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Chi tiết chấm công -->
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <div class="card card-table">
+          <div class="card-header">
+            <h4 class="card-title mb-0">
+              <i class="fas fa-list-alt me-2"></i>Chi tiết chấm công theo ngày
+              <span class="badge badge-primary ml-2">
+                Tổng: {{ details.count }} ngày
+              </span>
+            </h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">STT</th>
+                    <th class="text-center">Ngày làm việc</th>
+                    <th class="text-center">Ca làm</th>
+                    <th class="text-center">Check-in</th>
+                    <th class="text-center">Check-out</th>
+                    <th class="text-center">Số giờ</th>
+                    <th class="text-center">Lương ngày</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for detail in details %}
+                  <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td class="text-center">
+                      <strong class="d-block">{{ detail.work_date|date:"d/m/Y" }}</strong>
+                      <small class="text-muted">{{ detail.work_date|date:"l" }}</small>
+                    </td>
+                    <td class="text-center">
+                      {% if detail.shift_name %}
+                        <span class="badge badge-info">{{ detail.shift_name }}</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% if detail.check_in %}
+                        <span class="badge badge-success">
+                          <i class="fas fa-sign-in-alt me-1"></i>
+                          {{ detail.check_in|time:"H:i" }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% if detail.check_out %}
+                        <span class="badge badge-danger">
+                          <i class="fas fa-sign-out-alt me-1"></i>
+                          {{ detail.check_out|time:"H:i" }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <strong class="text-primary">{{ detail.hours_worked|floatformat:1 }}h</strong>
+                    </td>
+                    <td class="text-center">
+                      <strong class="text-success">
+                        {{ detail.daily_salary|floatformat:0|default:"0" }} VND
+                      </strong>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-5">
+                      <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                      <p class="mb-0">Không có dữ liệu chi tiết chấm công</p>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot class="bg-light">
+                  <tr class="font-weight-bold">
+                    <th colspan="5" class="text-right">Tổng cộng:</th>
+                    <th class="text-center">
+                      <span class="text-primary">{{ payroll.total_hours|floatformat:1 }}h</span>
+                    </th>
+                    <th class="text-center">
+                      <span class="text-success">{{ payroll.base_salary|floatformat:0|default:"0" }} VND</span>
+                    </th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Công thức tính lương -->
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="card-title text-white mb-0">
+              <i class="fas fa-calculator me-2"></i>Công thức tính lương
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-0">
+              <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>Cách tính
+              </h6>
+              <p class="mb-2">
+                <strong>Lương thực nhận</strong> = Lương cơ bản + Phụ cấp + Thưởng - Khấu trừ
+              </p>
+              <hr>
+              <p class="mb-0 small">
+                <strong>Chi tiết:</strong><br>
+                • <strong>Lương cơ bản:</strong> Tính theo số giờ làm việc thực tế<br>
+                • <strong>Phụ cấp:</strong> Các khoản phụ cấp đi lại, ăn uống, điện thoại...<br>
+                • <strong>Thưởng:</strong> Thưởng hiệu suất, thưởng KPI, thưởng đặc biệt...<br>
+                • <strong>Khấu trừ:</strong> Bảo hiểm, thuế, tạm ứng, kỷ luật...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="row mt-3 mb-3">
+      <div class="col-sm-12">
+        <div class="alert alert-warning text-center mb-0">
+          <i class="fas fa-shield-alt me-2"></i>
+          <strong>Lưu ý bảo mật:</strong> Thông tin bảng lương được bảo mật. Vui lòng không chia sẻ với người khác.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Bản quyền thuộc về Đá Cuội.</p>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/script.js' %}"></script>
+
+
+
+{% endblock %}

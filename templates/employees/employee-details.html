@@ -1,256 +1,130 @@
-{% extends 'Home/base.html' %}
-{% load static %}
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
 
-{% block body %}
 <div class="page-wrapper">
   <div class="content container-fluid">
-
-    <!-- Header -->
     <div class="page-header">
       <div class="row">
         <div class="col-sm-12">
-          <h3 class="page-title">Chi tiết bảng lương</h3>
+          <h3 class="page-title">Chi tiết nhân viên</h3>
           <ul class="breadcrumb">
             <li class="breadcrumb-item">
-              <a href="{% url 'finance:dashboard' %}">Tài chính</a>
-            </li>
-            <li class="breadcrumb-item">
-              <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
+              <a href="{% url 'employee_list' %}">Nhân viên</a>
             </li>
             <li class="breadcrumb-item active">Chi tiết</li>
           </ul>
         </div>
       </div>
     </div>
-    <!-- /Header -->
 
-    <div class="row">
-      <div class="col-sm-12">
-
-        <!-- Thông tin nhân viên -->
-        <div class="card">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-md-4 text-center border-right">
-                <div class="profile-img-wrap">
-                  <div class="profile-img mb-2">
-                    {% if payroll.employee.employee_image %}
-                    <img src="{{ payroll.employee.employee_image.url }}" alt="User Image" class="img-fluid rounded-circle border" style="width:120px; height:120px;">
-                    {% else %}
-                    <img src="{% static 'assets/img/default-avatar.png' %}" alt="User Image" class="img-fluid rounded-circle border" style="width:120px; height:120px;">
-                    {% endif %}
-                  </div>
-                  <h4 class="mb-0">{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}</h4>
-                  <small class="text-muted d-block">{{ payroll.employee.get_position_display }}</small>
-                  <span class="badge badge-light mt-1">Mã NV: {{ payroll.employee.employee_id }}</span>
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="about-info">
+              <h4>Thông tin nhân viên</h4>
+              <div class="media mt-3">
+                {% if employee.employee_image %}
+                <img
+                  src="{{ employee.employee_image.url }}"
+                  class="mr-3"
+                  alt="Ảnh nhân viên"
+                  style="max-width: 150px"
+                />
+                {% else %}
+                <img
+                  src="{% static 'assets/img/no-avatar.png' %}"
+                  class="mr-3"
+                  alt="No image"
+                  style="max-width: 150px"
+                />
+                {% endif %}
+                <div class="media-body">
+                  <ul>
+                    <li>
+                      <span class="title-span">Họ tên: </span>
+                      <span class="info-span">
+                        {{ employee.first_name }} {{ employee.last_name }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Mã NV: </span>
+                      <span class="info-span">{{ employee.employee_id }}</span>
+                    </li>
+                    <li>
+                      <span class="title-span">Email: </span>
+                      <span class="info-span"
+                        >{{ employee.email|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Giới tính: </span>
+                      <span class="info-span"
+                        >{{ employee.get_gender_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày sinh: </span>
+                      <span class="info-span"
+                        >{{ employee.date_of_birth|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Chức vụ: </span>
+                      <span class="info-span"
+                        >{{ employee.get_position_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày vào làm: </span>
+                      <span class="info-span"
+                        >{{ employee.joining_date|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Số điện thoại: </span>
+                      <span class="info-span"
+                        >{{ employee.mobile_number|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Địa chỉ: </span>
+                      <span class="info-span"
+                        >{{ employee.address|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngân hàng: </span>
+                      <span class="info-span"
+                        >{{ employee.bank_name|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Số tài khoản: </span>
+                      <span class="info-span"
+                        >{{ employee.bank_account_number|default:"" }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Trạng thái: </span>
+                      <span class="info-span"
+                        >{{ employee.get_employment_status_display }}</span
+                      >
+                    </li>
+                    <li>
+                      <span class="title-span">Ngày nghỉ việc: </span>
+                      <span class="info-span"
+                        >{{ employee.resignation_date|date:"d/m/Y" }}</span
+                      >
+                    </li>
+                  </ul>
                 </div>
               </div>
-
-              <div class="col-md-8">
-                <div class="table-responsive">
-                  <table class="table table-bordered mb-0">
-                    <tbody>
-                      <tr>
-                        <th width="35%">Mã bảng lương:</th>
-                        <td><code>{{ payroll.payroll_id }}</code></td>
-                      </tr>
-                      <tr>
-                        <th>Kỳ lương:</th>
-                        <td>{{ payroll.start_date|date:"d/m/Y" }} – {{ payroll.end_date|date:"d/m/Y" }}</td>
-                      </tr>
-                      <tr>
-                        <th>Trạng thái:</th>
-                        <td>
-                          {% if payroll.status == 'draft' %}
-                          <span class="badge badge-secondary">Nháp</span>
-                          {% elif payroll.status == 'pending' %}
-                          <span class="badge badge-warning">Chờ duyệt</span>
-                          {% elif payroll.status == 'approved' %}
-                          <span class="badge badge-info">Đã duyệt</span>
-                          {% elif payroll.status == 'paid' %}
-                          <span class="badge badge-success">Đã thanh toán</span>
-                          {% else %}
-                          <span class="badge badge-danger">Đã hủy</span>
-                          {% endif %}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Ngày lập:</th>
-                        <td>{{ payroll.created_at|date:"d/m/Y H:i" }}</td>
-                      </tr>
-                      {% if payroll.approved_by %}
-                      <tr>
-                        <th>Người duyệt:</th>
-                        <td>{{ payroll.approved_by.first_name }} {{ payroll.approved_by.last_name }}</td>
-                      </tr>
-                      <tr>
-                        <th>Ngày duyệt:</th>
-                        <td>{{ payroll.approved_at|date:"d/m/Y H:i" }}</td>
-                      </tr>
-                      {% endif %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-        <!-- /Thông tin nhân viên -->
-
-        <!-- Chi tiết tính lương -->
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title">Chi tiết tính lương</h4>
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <tbody>
-                  <tr>
-                    <th width="30%">Tổng giờ làm việc:</th>
-                    <td width="20%" class="text-right">{{ payroll.total_hours }} giờ</td>
-                    <th width="30%">Lương theo giờ:</th>
-                    <td width="20%" class="text-right">{{ payroll.hourly_rate|floatformat:0 }} VND</td>
-                  </tr>
-                  <tr class="table-light">
-                    <th>Tiền công cơ bản:</th>
-                    <td colspan="3" class="text-right">
-                      <strong>{{ payroll.base_salary|floatformat:0 }} VND</strong><br>
-                      <small class="text-muted">
-                        ({{ payroll.total_hours }}h × {{ payroll.hourly_rate|floatformat:0 }})
-                      </small>
-                    </td>
-                  </tr>
-                  <tr class="table-success">
-                    <th>Tiền thưởng:</th>
-                    <td colspan="3" class="text-right text-success">
-                      <strong>+ {{ payroll.bonus|floatformat:0 }} VND</strong>
-                    </td>
-                  </tr>
-                  <tr class="table-warning">
-                    <th>Tiền ứng trước:</th>
-                    <td colspan="3" class="text-right text-danger">
-                      <strong>- {{ payroll.advance|floatformat:0 }} VND</strong>
-                    </td>
-                  </tr>
-                  <tr class="table-warning">
-                    <th>Khấu trừ/Phạt:</th>
-                    <td colspan="3" class="text-right text-danger">
-                      <strong>- {{ payroll.deduction|floatformat:0 }} VND</strong>
-                    </td>
-                  </tr>
-                  <tr class="table-primary">
-                    <th>LƯƠNG THỰC NHẬN:</th>
-                    <td colspan="3" class="text-right">
-                      <strong style="font-size: 1.5rem; color: #007bff;">
-                        {{ payroll.net_salary|floatformat:0 }} VND
-                      </strong>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {% if payroll.notes %}
-            <div class="alert alert-info mt-3 mb-0">
-              <strong>Ghi chú:</strong> {{ payroll.notes }}
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        <!-- /Chi tiết tính lương -->
-
-        <!-- Chi tiết chấm công -->
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title">Chi tiết chấm công theo ngày ({{ details.count }} ngày)</h4>
-            <div class="table-responsive">
-              <table class="table table-hover table-bordered mb-0">
-                <thead class="thead-light">
-                  <tr>
-                    <th class="text-center">Ngày</th>
-                    <th class="text-center">Giờ vào</th>
-                    <th class="text-center">Giờ ra</th>
-                    <th class="text-center">Số giờ làm</th>
-                    <th class="text-center">Trạng thái</th>
-                    <th class="text-center">Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for detail in details %}
-                  <tr>
-                    <td class="text-center">
-                      <strong>{{ detail.work_date|date:"d/m/Y" }}</strong><br>
-                      <small class="text-muted">{{ detail.work_date|date:"l" }}</small>
-                    </td>
-                    <td class="text-center">
-                      {% if detail.check_in_time %}
-                      {{ detail.check_in_time|date:"H:i" }}
-                      {% else %}
-                      <span class="text-muted">-</span>
-                      {% endif %}
-                    </td>
-                    <td class="text-center">
-                      {% if detail.check_out_time %}
-                      {{ detail.check_out_time|date:"H:i" }}
-                      {% else %}
-                      <span class="text-muted">-</span>
-                      {% endif %}
-                    </td>
-                    <td class="text-center"><strong>{{ detail.hours_worked }}h</strong></td>
-                    <td class="text-center">
-                      {% if detail.status == 'V' %}
-                      <span class="badge badge-danger">Vắng</span>
-                      {% elif detail.status == 'T' %}
-                      <span class="badge badge-warning">Trễ</span>
-                      {% elif detail.status == 'S' %}
-                      <span class="badge badge-info">Ra sớm</span>
-                      {% elif detail.status == 'TS' %}
-                      <span class="badge badge-warning">Trễ + Ra sớm</span>
-                      {% else %}
-                      <span class="badge badge-success">Bình thường</span>
-                      {% endif %}
-                    </td>
-                    <td class="text-center">
-                      {% if detail.note %}
-                      <small class="text-muted">{{ detail.note|truncatewords:10 }}</small>
-                      {% else %}
-                      <span class="text-muted">-</span>
-                      {% endif %}
-                    </td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="6" class="text-center text-muted">
-                      Chưa có dữ liệu chấm công
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-                <tfoot class="thead-light">
-                  <tr>
-                    <th colspan="3" class="text-right">TỔNG CỘNG:</th>
-                    <th class="text-center"><strong>{{ payroll.total_hours }}h</strong></th>
-                    <th colspan="2"></th>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-        <!-- /Chi tiết chấm công -->
-
       </div>
     </div>
   </div>
-
-  <footer class="mt-4">
-    <p class="text-center text-muted mb-0">© Bản quyền thuộc về Đá Cuội.</p>
-  </footer>
 </div>
 
-<!-- JS -->
-<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static 'assets/js/popper.min.js' %}"></script>
-<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
-<script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
-<script src="{% static 'assets/js/script.js' %}"></script>
 {% endblock %}

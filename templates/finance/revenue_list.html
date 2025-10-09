@@ -32,21 +32,11 @@
     transform: scale(1.05);
   }
 
-  .text-ellipsis {
-    max-width: 300px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .text-expanded {
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    text-overflow: clip !important;
-    max-width: none !important;
+  .shift-badge {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
   }
 </style>
 
@@ -81,7 +71,7 @@
         <div class="card card-table">
           <div class="card-body">
             <form method="get" class="row g-2 align-items-center">
-              <div class="col-md-4">{{ filter_form.category }}</div>
+              <div class="col-md-4">{{ filter_form.shift }}</div>
               <div class="col-md-3">{{ filter_form.start_date }}</div>
               <div class="col-md-3">{{ filter_form.end_date }}</div>
               <div class="col-md-1 d-flex justify-content-center">
@@ -95,15 +85,35 @@
       </div>
     </div>
 
-    <!-- Total Amount -->
+    <!-- Total Summary -->
     <div class="row">
-      <div class="col-sm-12">
+      <div class="col-md-4">
+        <div class="alert alert-primary d-flex align-items-center justify-content-between shadow-sm">
+          <div>
+            <strong><i class="fas fa-coins me-2"></i> Tổng thu:</strong>
+          </div>
+          <div class="fs-6 fw-bold">
+            {{ total_tong|floatformat:0|intcomma }} VND
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="alert alert-danger d-flex align-items-center justify-content-between shadow-sm">
+          <div>
+            <strong><i class="fas fa-minus-circle me-2"></i> Tổng chi:</strong>
+          </div>
+          <div class="fs-6 fw-bold">
+            {{ total_chi|floatformat:0|intcomma }} VND
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
         <div class="alert alert-success d-flex align-items-center justify-content-between shadow-sm">
           <div>
-            <strong><i class="fas fa-calculator me-2"></i> Tổng doanh thu:</strong>
+            <strong><i class="fas fa-calculator me-2"></i> Danh thu ròng:</strong>
           </div>
           <div class="fs-5 fw-bold text-success">
-            {{ total_amount|floatformat:0|intcomma }} VND
+            {{ total_danh_thu_rong|floatformat:0|intcomma }} VND
           </div>
         </div>
       </div>
@@ -119,11 +129,15 @@
                 <thead>
                   <tr>
                     <th class="text-center">Ngày</th>
-                    <th class="text-center">Nguồn thu</th>
-                    <th class="text-center">Loại</th>
-                    <th class="text-center">Mô tả</th>
-                    <th class="text-center">Số tiền</th>
-                    <th class="text-center">Người ghi nhận</th>
+                    <th class="text-center">Ca</th>
+                    <th class="text-center">Tiền mặt</th>
+                    <th class="text-center">Chuyển khoản</th>
+                    <th class="text-center">VNPay</th>
+                    <th class="text-center">Nợ</th>
+                    <th class="text-center">Chi</th>
+                    <th class="text-center">Tổng</th>
+                    <th class="text-center">Danh thu ròng</th>
+                    <th class="text-center">Người nhập</th>
                     <th class="text-center">Hành động</th>
                   </tr>
                 </thead>
@@ -131,21 +145,33 @@
                   {% for revenue in revenues %}
                   <tr>
                     <td class="text-center">{{ revenue.revenue_date|date:"d/m/Y" }}</td>
-                    <td class="text-center"><strong>{{ revenue.source }}</strong></td>
                     <td class="text-center">
-                      {% if revenue.category == 'sales' %}
-                      <span class="badge badge-primary">Bán hàng</span>
-                      {% elif revenue.category == 'service' %}
-                      <span class="badge badge-info">Dịch vụ</span>
+                      {% if revenue.shift == 'sang' %}
+                      <span class="shift-badge bg-info text-white">Sáng</span>
+                      {% elif revenue.shift == 'chieu' %}
+                      <span class="shift-badge bg-warning text-white">Chiều</span>
                       {% else %}
-                      <span class="badge badge-secondary">Khác</span>
+                      <span class="shift-badge bg-dark text-white">Tối</span>
                       {% endif %}
                     </td>
-                    <td class="text-center text-ellipsis" onclick="toggleDescription(this)">
-                      {{ revenue.description|default:"-" }}
+                    <td class="text-center">
+                      <span class="{% if revenue.tien_mat < 0 %}text-danger{% endif %}">
+                        {{ revenue.tien_mat|floatformat:0|intcomma }}
+                      </span>
+                    </td>
+                    <td class="text-center">{{ revenue.chuyen_khoan|floatformat:0|intcomma }}</td>
+                    <td class="text-center">{{ revenue.vnpay|floatformat:0|intcomma }}</td>
+                    <td class="text-center">{{ revenue.no|floatformat:0|intcomma }}</td>
+                    <td class="text-center text-danger">
+                      <strong>{{ revenue.chi|floatformat:0|intcomma }}</strong>
                     </td>
                     <td class="text-center">
-                      <strong class="text-success">{{ revenue.amount|floatformat:0|intcomma }} VND</strong>
+                      <strong>{{ revenue.tong|floatformat:0|intcomma }}</strong>
+                    </td>
+                    <td class="text-center">
+                      <strong class="{% if revenue.danh_thu_rong < 0 %}text-danger{% else %}text-success{% endif %}">
+                        {{ revenue.danh_thu_rong|floatformat:0|intcomma }}
+                      </strong>
                     </td>
                     <td class="text-center">
                       {% if revenue.created_by %}
@@ -160,14 +186,14 @@
                     </td>
                     <td class="text-center">
                       <div class="actions">
-                        <a href="{% url 'finance:revenue_detail' revenue.pk %}" class="btn btn-sm bg-info-light mr-2">
+                        <a href="{% url 'finance:revenue_detail' revenue.pk %}" class="btn btn-sm bg-info-light mr-2" title="Xem chi tiết">
                           <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{% url 'finance:revenue_update' revenue.pk %}" class="btn btn-sm bg-success-light mr-2">
+                        <a href="{% url 'finance:revenue_update' revenue.pk %}" class="btn btn-sm bg-success-light mr-2" title="Sửa">
                           <i class="fas fa-pen"></i>
                         </a>
                         <a href="{% url 'finance:revenue_delete' revenue.pk %}" class="btn btn-sm bg-danger-light"
-                          onclick="return confirm('Bạn có chắc muốn xóa doanh thu này?');">
+                          onclick="return confirm('Bạn có chắc muốn xóa doanh thu này? Các chi phí liên quan cũng sẽ bị xóa.');" title="Xóa">
                           <i class="fas fa-trash"></i>
                         </a>
                       </div>
@@ -175,7 +201,7 @@
                   </tr>
                   {% empty %}
                   <tr>
-                    <td colspan="7" class="text-center text-muted">Chưa có doanh thu nào</td>
+                    <td colspan="11" class="text-center text-muted">Chưa có doanh thu nào</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -199,11 +225,5 @@
 <script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
 <script src="{% static 'assets/js/script.js' %}"></script>
-
-<script>
-  function toggleDescription(element) {
-    element.classList.toggle('text-expanded');
-  }
-</script>
 
 {% endblock %}

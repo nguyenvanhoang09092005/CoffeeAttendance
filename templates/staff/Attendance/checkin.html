@@ -1,263 +1,508 @@
-{% extends 'staff/Dashboard/base.html' %} {% load static %} {% block body %}
-<div class="page-wrapper">
-  <div class="content container-fluid">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="row align-items-center">
-        <div class="col">
-          <h3 class="page-title text-primary">📋 Chấm công</h3>
-          <ul class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a href="{% url 'attendance:attendance_list' %}">Chấm công</a>
-            </li>
-            <li class="breadcrumb-item active">Check-in</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+{% extends 'staff/Dashboard/base.html' %}
+{% load static %}
+{% block body %}
 
-    <div class="row">
-      <div class="col-sm-12">
-        <div class="card shadow-lg border-0 rounded-4">
-          <div class="card-body">
-            <!-- Đã check-out -->
-            {% if attendance.check_out_time %}
-            <div class="text-center py-5">
-              <i
-                class="bi bi-emoji-smile-fill text-primary mb-3"
-                style="font-size: 4rem"
-              ></i>
-              <h3 class="text-primary fw-bold">
-                🎉 Bạn đã hoàn tất ca hôm nay!
-              </h3>
-              <p class="text-muted">
-                Check-in:
-                <b>{{ attendance.check_in_time|date:"H:i:s d/m/Y" }}</b>
-              </p>
-              <p class="text-muted">
-                Check-out:
-                <b>{{ attendance.check_out_time|date:"H:i:s d/m/Y" }}</b>
-              </p>
-              {% if attendance.face_image %}
-              <img
-                src="{{ attendance.face_image.url }}"
-                class="rounded border shadow-sm mt-3"
-                style="max-width: 320px; aspect-ratio: 4/3; object-fit: cover"
-              />
-              {% endif %}
-            </div>
+<style>
+  :root {
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-success: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+    --gradient-danger: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+    --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+  }
 
-            <!-- Đã check-in nhưng chưa check-out -->
-            {% elif attendance.check_in_time %}
-            <div class="mb-4">
-              <h4 class="fw-bold text-dark mb-1">
-                👤 Nhân viên:
-                <span class="text-success">{{ attendance.employee }}</span>
-              </h4>
-              <p class="text-muted mb-0">🕑 Ca làm: <b>{{ shift.name }}</b></p>
-              <p class="text-muted">
-                Check-in lúc:
-                <b>{{ attendance.check_in_time|date:"H:i:s d/m/Y" }}</b>
-              </p>
-            </div>
+  .page-content {
+    padding: 20px 15px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
 
-            <form method="post" enctype="multipart/form-data" id="checkoutForm">
-              {% csrf_token %}
-              <div class="row g-4">
-                <!-- Camera -->
-                <div class="col-md-6 text-center">
-                  <label class="form-label fw-bold fs-6">🎥 Camera</label>
-                  <div class="border rounded p-3 bg-light position-relative">
-                    <video
-                      id="video"
-                      autoplay
-                      playsinline
-                      muted
-                      class="rounded-3 border shadow-sm w-100"
-                      style="aspect-ratio: 4/3; object-fit: cover"
-                    ></video>
-                    <canvas id="canvas" class="d-none"></canvas>
-                    <img
-                      id="preview"
-                      class="rounded-3 border shadow-sm d-none mt-3"
-                      style="
-                        aspect-ratio: 4/3;
-                        max-width: 100%;
-                        object-fit: cover;
-                      "
-                    />
-                    <p id="camera-status" class="text-muted mt-2 small">
-                      👉 Nhấn "Mở camera" để bắt đầu
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    name="face_image"
-                    id="face_image"
-                    style="display: none"
-                  />
-                  <div class="mt-3 d-flex justify-content-center gap-2">
-                    <button
-                      type="button"
-                      id="startCamera"
-                      class="btn btn-outline-primary"
-                    >
-                      🎥 Mở camera
-                    </button>
-                    <button
-                      type="button"
-                      id="capture"
-                      class="btn btn-outline-success"
-                      disabled
-                    >
-                      📸 Chụp ảnh
-                    </button>
-                  </div>
-                </div>
+  /* Card Styles */
+  .custom-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+  }
 
-                <!-- GPS -->
-                <div class="col-md-6">
-                  <label class="form-label fw-bold fs-6">📍 Vị trí</label>
-                  <div class="p-3 border rounded bg-light">
-                    <p class="mb-1">
-                      🌍 Vĩ độ: <span id="latText" class="fw-bold">--</span>
-                    </p>
-                    <p class="mb-0">
-                      🌍 Kinh độ: <span id="lonText" class="fw-bold">--</span>
-                    </p>
-                  </div>
-                </div>
+  .custom-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
 
-                <!-- Hidden inputs -->
-                <input type="hidden" name="action" value="checkout" />
-                <input type="hidden" name="latitude" id="latitude" />
-                <input type="hidden" name="longitude" id="longitude" />
-                <input type="hidden" name="location_note" id="location_note" />
+  /* Gradient Cards */
+  .gradient-card {
+    color: white;
+    background: var(--gradient-primary);
+  }
 
-                <!-- Submit -->
-                <div class="col-12 text-center">
-                  <button type="submit" class="btn btn-danger btn-lg px-5">
-                    🔚 Xác nhận Check-out
-                  </button>
-                </div>
-              </div>
-            </form>
+  .gradient-card.success {
+    background: var(--gradient-success);
+  }
 
-            <div class="alert alert-info mt-4">
-              <b>Lưu ý:</b> Khi check-out cũng phải chụp ảnh và bật GPS. Nếu
-              không trùng khớp sẽ báo lỗi.
-            </div>
+  .gradient-card.danger {
+    background: var(--gradient-danger);
+  }
 
-            <!-- Chưa check-in -->
-            {% else %}
-            <div class="mb-4">
-              <h4 class="fw-bold text-dark mb-1">
-                👤 Nhân viên:
-                <span class="text-success">{{ attendance.employee }}</span>
-              </h4>
-              <p class="text-muted mb-0">🕑 Ca làm: <b>{{ shift.name }}</b></p>
-            </div>
+  .gradient-card.info {
+    background: var(--gradient-info);
+  }
 
-            <form method="post" enctype="multipart/form-data" id="checkinForm">
-              {% csrf_token %}
-              <div class="row g-4">
-                <!-- Camera -->
-                <div class="col-md-6 text-center">
-                  <label class="form-label fw-bold fs-6">🎥 Camera</label>
-                  <div class="border rounded p-3 bg-light position-relative">
-                    <video
-                      id="video"
-                      autoplay
-                      playsinline
-                      muted
-                      class="rounded-3 border shadow-sm w-100"
-                      style="aspect-ratio: 4/3; object-fit: cover"
-                    ></video>
-                    <canvas id="canvas" class="d-none"></canvas>
-                    <img
-                      id="preview"
-                      class="rounded-3 border shadow-sm d-none mt-3"
-                      style="
-                        aspect-ratio: 4/3;
-                        max-width: 100%;
-                        object-fit: cover;
-                      "
-                    />
-                    <p id="camera-status" class="text-muted mt-2 small">
-                      👉 Nhấn "Mở camera" để bắt đầu
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    name="face_image"
-                    id="face_image"
-                    style="display: none"
-                  />
-                  <div class="mt-3 d-flex justify-content-center gap-2">
-                    <button
-                      type="button"
-                      id="startCamera"
-                      class="btn btn-outline-primary"
-                    >
-                      🎥 Mở camera
-                    </button>
-                    <button
-                      type="button"
-                      id="capture"
-                      class="btn btn-outline-success"
-                      disabled
-                    >
-                      📸 Chụp ảnh
-                    </button>
-                  </div>
-                </div>
+  /* Buttons */
+  .btn-gradient {
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+  }
 
-                <!-- GPS -->
-                <div class="col-md-6">
-                  <label class="form-label fw-bold fs-6">📍 Vị trí</label>
-                  <div class="p-3 border rounded bg-light">
-                    <p class="mb-1">
-                      🌍 Vĩ độ: <span id="latText" class="fw-bold">--</span>
-                    </p>
-                    <p class="mb-0">
-                      🌍 Kinh độ: <span id="lonText" class="fw-bold">--</span>
-                    </p>
-                  </div>
-                </div>
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: white;
+  }
 
-                <!-- Hidden inputs -->
-                <input type="hidden" name="action" value="checkin" />
-                <input type="hidden" name="latitude" id="latitude" />
-                <input type="hidden" name="longitude" id="longitude" />
-                <input type="hidden" name="location_note" id="location_note" />
+  .btn-gradient.primary {
+    background: var(--gradient-primary);
+  }
 
-                <!-- Submit -->
-                <div class="col-12 text-center">
-                  <button type="submit" class="btn btn-success btn-lg px-5">
-                    ✅ Xác nhận Check-in
-                  </button>
-                </div>
-              </div>
-            </form>
+  .btn-gradient.success {
+    background: var(--gradient-success);
+  }
 
-            <div class="alert alert-info mt-4">
-              <b>Lưu ý:</b> Đứng nơi đủ sáng, giữ khuôn mặt rõ, bật GPS để hệ
-              thống xác thực.
-            </div>
-            {% endif %}
+  .btn-gradient.danger {
+    background: var(--gradient-danger);
+  }
+
+  /* Video/Image Container */
+  .media-container {
+    position: relative;
+    width: 100%;
+    padding-top: 75%; /* 4:3 Aspect Ratio */
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .media-container video,
+  .media-container img,
+  .media-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  /* Info Box */
+  .info-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    color: #6c757d;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-value {
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    color: #212529;
+  }
+
+  /* Success State */
+  .success-state {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .success-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    background: var(--gradient-success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    box-shadow: var(--shadow-lg);
+    animation: scaleIn 0.5s ease;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .time-badge {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 24px;
+    box-shadow: var(--shadow-sm);
+    display: inline-block;
+    margin: 8px;
+  }
+
+  .time-badge-label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 4px;
+  }
+
+  .time-badge-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #212529;
+  }
+
+  /* Alert Styles */
+  .alert-custom {
+    border: none;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Camera Status */
+  #camera-status {
+    margin-top: 12px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 991px) {
+    .page-content {
+      padding: 15px 10px;
+    }
+
+    .custom-card {
+      margin-bottom: 20px;
+    }
+
+    .media-container {
+      padding-top: 75%;
+    }
+
+    .btn-gradient {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .page-content {
+      padding: 10px 5px;
+    }
+
+    .success-icon {
+      width: 100px;
+      height: 100px;
+      font-size: 50px;
+    }
+
+    .time-badge {
+      padding: 12px 16px;
+      margin: 6px;
+    }
+
+    .time-badge-value {
+      font-size: 14px;
+    }
+
+    h2, h3, h4 {
+      font-size: 1.25rem;
+    }
+
+    h5 {
+      font-size: 1.1rem;
+    }
+  }
+
+  /* Loading Animation */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<div class="page-content">
+  <div class="container-fluid">
+    
+    <!-- Header Card -->
+    <div class="custom-card mb-4">
+      <div class="card-body p-3 p-md-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div>
+            <h2 class="mb-2 fw-bold text-primary">
+              <i class="fas fa-clipboard-check me-2"></i>Chấm công
+            </h2>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                  <a href="{% url 'attendance:attendance_list' %}" class="text-decoration-none">
+                    Chấm công
+                  </a>
+                </li>
+                <li class="breadcrumb-item active">Check-in/Check-out</li>
+              </ol>
+            </nav>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ============= ĐÃ CHECK-OUT ============= -->
+    {% if attendance.check_out_time %}
+    <div class="custom-card">
+      <div class="card-body p-3 p-md-5">
+        <div class="success-state">
+          <div class="success-icon">
+            <span class="text-white">🎉</span>
+          </div>
+          
+          <h3 class="text-success fw-bold mb-4">
+            Hoàn tất ca làm việc hôm nay!
+          </h3>
+          
+          <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+            <div class="time-badge">
+              <div class="time-badge-label">🟢 Check-in</div>
+              <div class="time-badge-value">
+                {{ attendance.check_in_time|date:"H:i:s" }}
+              </div>
+              <div class="text-muted small">
+                {{ attendance.check_in_time|date:"d/m/Y" }}
+              </div>
+            </div>
+            
+            <div class="time-badge">
+              <div class="time-badge-label">🔴 Check-out</div>
+              <div class="time-badge-value">
+                {{ attendance.check_out_time|date:"H:i:s" }}
+              </div>
+              <div class="text-muted small">
+                {{ attendance.check_out_time|date:"d/m/Y" }}
+              </div>
+            </div>
+          </div>
+
+          {% if attendance.face_image %}
+          <div class="mt-4">
+            <img
+              src="{{ attendance.face_image.url }}"
+              class="img-fluid rounded-4 shadow-lg"
+              style="max-width: 400px; max-height: 400px; object-fit: cover;"
+              alt="Face Image"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= CHƯA CHECK-OUT / CHƯA CHECK-IN ============= -->
+    {% else %}
+    
+    <!-- Employee Info Card -->
+    <div class="custom-card gradient-card {% if attendance.check_in_time %}danger{% else %}success{% endif %} mb-4">
+      <div class="card-body p-3 p-md-4">
+        <h4 class="fw-bold mb-3">
+          <i class="fas fa-user-circle me-2"></i>
+          Nhân viên: <span class="text-warning">{{ attendance.employee }}</span>
+        </h4>
+        <p class="mb-2">
+          <i class="fas fa-clock me-2"></i>
+          Ca làm việc: <strong>{{ shift.name }}</strong>
+        </p>
+        {% if attendance.check_in_time %}
+        <p class="mb-0">
+          <i class="fas fa-check-circle me-2"></i>
+          Check-in lúc: <strong>{{ attendance.check_in_time|date:"H:i:s d/m/Y" }}</strong>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Main Form -->
+    <form 
+      method="post" 
+      enctype="multipart/form-data" 
+      id="{% if attendance.check_in_time %}checkoutForm{% else %}checkinForm{% endif %}"
+    >
+      {% csrf_token %}
+      
+      <div class="row g-3 g-md-4">
+        
+        <!-- Camera Section -->
+        <div class="col-12 col-lg-6">
+          <div class="custom-card h-100">
+            <div class="card-body p-3 p-md-4">
+              <h5 class="fw-bold mb-3">
+                <i class="fas fa-camera text-primary me-2"></i>
+                Chụp ảnh khuôn mặt
+              </h5>
+              
+              <div class="media-container mb-3">
+                <video id="video" autoplay playsinline muted></video>
+                <canvas id="canvas" class="d-none"></canvas>
+                <img id="preview" class="d-none" alt="Preview" />
+              </div>
+              
+              <div id="camera-status" class="alert alert-info alert-custom mb-3">
+                <i class="fas fa-info-circle"></i>
+                <span>Nhấn "Mở camera" để bắt đầu</span>
+              </div>
+              
+              <input type="file" name="face_image" id="face_image" class="d-none" />
+              
+              <div class="d-grid gap-2">
+                <button 
+                  type="button" 
+                  id="startCamera" 
+                  class="btn btn-outline-primary btn-lg"
+                >
+                  <i class="fas fa-video me-2"></i>Mở camera
+                </button>
+                <button 
+                  type="button" 
+                  id="capture" 
+                  class="btn btn-gradient {% if attendance.check_in_time %}success{% else %}primary{% endif %} btn-lg" 
+                  disabled
+                >
+                  <i class="fas fa-camera me-2"></i>Chụp ảnh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GPS Section -->
+        <div class="col-12 col-lg-6">
+          <div class="custom-card h-100">
+            <div class="card-body p-3 p-md-4">
+              <h5 class="fw-bold mb-3">
+                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                Vị trí hiện tại
+              </h5>
+              
+              <div class="info-box">
+                <div class="info-row">
+                  <span class="info-label">
+                    <i class="fas fa-globe"></i>
+                    Vĩ độ
+                  </span>
+                  <span class="info-value" id="latText">--</span>
+                </div>
+                
+                <div class="info-row">
+                  <span class="info-label">
+                    <i class="fas fa-globe"></i>
+                    Kinh độ
+                  </span>
+                  <span class="info-value" id="lonText">--</span>
+                </div>
+                
+                <div class="alert alert-secondary alert-custom mt-3 mb-0">
+                  <i class="fas fa-spinner spinner"></i>
+                  <span id="locationAddress">Đang lấy vị trí...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden Inputs -->
+        <input type="hidden" name="action" value="{% if attendance.check_in_time %}checkout{% else %}checkin{% endif %}" />
+        <input type="hidden" name="latitude" id="latitude" />
+        <input type="hidden" name="longitude" id="longitude" />
+        <input type="hidden" name="location_note" id="location_note" />
+
+        <!-- Submit Button -->
+        <div class="col-12">
+          <div class="d-grid">
+            <button 
+              type="submit" 
+              class="btn btn-gradient {% if attendance.check_in_time %}danger{% else %}success{% endif %} btn-lg py-3"
+            >
+              <i class="fas fa-{% if attendance.check_in_time %}sign-out-alt{% else %}sign-in-alt{% endif %} me-2"></i>
+              Xác nhận {% if attendance.check_in_time %}Check-out{% else %}Check-in{% endif %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Info Alert -->
+    <div class="alert alert-info alert-custom mt-4">
+      <i class="fas fa-info-circle"></i>
+      <div>
+        <strong>Lưu ý:</strong> 
+        {% if attendance.check_in_time %}
+        Khi check-out phải chụp ảnh và bật GPS. Nếu không trùng khớp sẽ báo lỗi.
+        {% else %}
+        Đứng nơi đủ sáng, giữ khuôn mặt rõ, bật GPS để hệ thống xác thực.
+        {% endif %}
+      </div>
+    </div>
+
+    {% endif %}
+
   </div>
 </div>
 
 {% if not attendance.check_out_time %}
 <script>
-  const mapboxToken =
-    "pk.eyJ1IjoiaG9hbmdrZTM0MDJmIiwiYSI6ImNtYTBkYzAyZzIyeWsyam13dTFjOWthMHUifQ.lXQX_tarAl9h2Vqhx5Gg5Q";
+  const mapboxToken = "pk.eyJ1IjoiaG9hbmdrZTM0MDJmIiwiYSI6ImNtYTBkYzAyZzIyeWsyam13dTFjOWthMHUifQ.lXQX_tarAl9h2Vqhx5Gg5Q";
 
-  // === GPS ===
+  // ===== GPS =====
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -270,12 +515,17 @@
         getAddress(lat, lon);
       },
       (err) => {
-        alert("⚠️ Không lấy được GPS: " + err.message);
+        const locationEl = document.getElementById("locationAddress");
+        locationEl.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Không lấy được GPS: ' + err.message;
+        locationEl.parentElement.className = 'alert alert-danger alert-custom mt-3 mb-0';
       }
     );
+  } else {
+    document.getElementById("locationAddress").innerHTML = 
+      '<i class="fas fa-times-circle me-2"></i>Trình duyệt không hỗ trợ GPS';
   }
 
-  // === Camera ===
+  // ===== Camera =====
   const video = document.getElementById("video");
   const canvas = document.getElementById("canvas");
   const startBtn = document.getElementById("startCamera");
@@ -287,17 +537,24 @@
 
   startBtn.addEventListener("click", async () => {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 960 }
+        } 
       });
       video.srcObject = stream;
       await video.play();
       captureBtn.disabled = false;
-      cameraStatus.innerText = "✅ Camera đã bật, sẵn sàng chụp!";
-      startBtn.innerText = "🔄 Chụp lại";
+      cameraStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Camera đã bật, sẵn sàng chụp!</span>';
+      cameraStatus.className = 'alert alert-success alert-custom mb-3';
+      startBtn.innerHTML = '<i class="fas fa-redo me-2"></i>Chụp lại';
       preview.classList.add("d-none");
+      video.classList.remove("d-none");
     } catch (err) {
-      alert("⚠️ Không truy cập được camera: " + err.message);
+      cameraStatus.innerHTML = '<i class="fas fa-times-circle"></i><span>Không truy cập được camera: ' + err.message + '</span>';
+      cameraStatus.className = 'alert alert-danger alert-custom mb-3';
     }
   });
 
@@ -317,44 +574,55 @@
       faceInput.files = dataTransfer.files;
       preview.src = URL.createObjectURL(blob);
       preview.classList.remove("d-none");
-      cameraStatus.innerText = "📷 Ảnh đã được chụp!";
+      video.classList.add("d-none");
+      cameraStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Ảnh đã được chụp thành công!</span>';
+      cameraStatus.className = 'alert alert-success alert-custom mb-3';
     });
   });
 
-  // === Địa chỉ từ Mapbox ===
+  // ===== Get Address from Mapbox =====
   function getAddress(lat, lon) {
-    fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&language=vi`
-    )
+    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&language=vi`)
       .then((res) => res.json())
       .then((data) => {
+        const locationEl = document.getElementById("locationAddress");
         if (data.features && data.features.length > 0) {
           const address = data.features[0].place_name;
           document.getElementById("location_note").value = address;
+          locationEl.innerHTML = '<i class="fas fa-map-marker-alt me-2"></i>' + address;
+          locationEl.parentElement.className = 'alert alert-success alert-custom mt-3 mb-0';
+        } else {
+          locationEl.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Không tìm thấy địa chỉ';
+          locationEl.parentElement.className = 'alert alert-warning alert-custom mt-3 mb-0';
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        const locationEl = document.getElementById("locationAddress");
+        locationEl.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Không lấy được địa chỉ';
+        locationEl.parentElement.className = 'alert alert-warning alert-custom mt-3 mb-0';
+      });
   }
 
-  // === Validate ===
+  // ===== Form Validation =====
   function validateForm(e) {
     if (!faceInput.files.length) {
       e.preventDefault();
       alert("❌ Bạn phải chụp ảnh khuôn mặt trước khi gửi!");
+      return false;
     }
-    if (
-      !document.getElementById("latitude").value ||
-      !document.getElementById("longitude").value
-    ) {
+    if (!document.getElementById("latitude").value || !document.getElementById("longitude").value) {
       e.preventDefault();
       alert("❌ Không lấy được vị trí GPS!");
+      return false;
     }
+    return true;
   }
-  document
-    .getElementById("checkinForm")
-    ?.addEventListener("submit", validateForm);
-  document
-    .getElementById("checkoutForm")
-    ?.addEventListener("submit", validateForm);
+
+  const form = document.getElementById("{% if attendance.check_in_time %}checkoutForm{% else %}checkinForm{% endif %}");
+  if (form) {
+    form.addEventListener("submit", validateForm);
+  }
 </script>
-{% endif %} {% endblock %}
+{% endif %}
+
+{% endblock %}

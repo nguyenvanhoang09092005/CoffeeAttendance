@@ -1,149 +1,221 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="vi">
+<head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=0"
-    />
-    <title>Da Cuoi - Đăng ký</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đá Cuội Café - Đăng ký</title>
 
-    <!-- Favicon -->
     <link rel="shortcut icon" href="{% static 'assets/img/favicon.png' %}" />
-    <!-- Google Fonts -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&display=swap"
-    />
-    <!-- Bootstrap CSS -->
-    <link
-      rel="stylesheet"
-      href="{% static 'assets/plugins/bootstrap/css/bootstrap.min.css' %}"
-    />
-    <!-- Font Awesome CSS -->
-    <link
-      rel="stylesheet"
-      href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}"
-    />
-    <link
-      rel="stylesheet"
-      href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}"
-    />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}" />
-  </head>
-  <body>
-    <div class="main-wrapper login-body">
-      <div class="login-wrapper">
-        <div class="container">
-          <div class="loginbox">
-            <div class="login-left">
-              <img
-                class="img-fluid"
-                src="{% static 'assets/img/logo-white.png' %}"
-                alt="Logo"
-              />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'assets/plugins/bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}" />
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .register-left {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-9">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="row g-0">
+                        <!-- Right Side - Register Form -->
+                        <div class="col-lg-7 order-2 order-lg-1 p-4 p-md-5">
+                            <div class="mb-4 text-center text-lg-start">
+                                <h1 class="h3 fw-bold text-dark mb-2">Tạo tài khoản mới 🚀</h1>
+                                <p class="text-muted">Tham gia cùng chúng tôi ngay hôm nay</p>
+                            </div>
+
+                            <!-- Messages -->
+                            {% if messages %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                {% for message in messages %}
+                                <div>{{ message }}</div>
+                                {% endfor %}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endif %}
+
+                            <!-- Register Form -->
+                            <form method="POST" action="{% url 'signup' %}">
+                                {% csrf_token %}
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark">Họ</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </span>
+                                            <input type="text" name="first_name" class="form-control border-start-0 ps-0" placeholder="Nguyễn" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark">Tên</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </span>
+                                            <input type="text" name="last_name" class="form-control border-start-0 ps-0" placeholder="Văn A" required />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 mt-3">
+                                    <label class="form-label fw-semibold text-dark">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-envelope text-muted"></i>
+                                        </span>
+                                        <input type="email" name="email" class="form-control border-start-0 ps-0" placeholder="your@email.com" required />
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark">Mật khẩu</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-lock text-muted"></i>
+                                        </span>
+                                        <input type="password" name="password" id="password" class="form-control border-start-0 border-end-0 ps-0" placeholder="••••••••" required />
+                                        <span class="input-group-text bg-light border-start-0 cursor-pointer" onclick="togglePassword('password', 'toggleIcon1')">
+                                            <i class="fas fa-eye text-muted" id="toggleIcon1"></i>
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">Tối thiểu 8 ký tự</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark">Xác nhận mật khẩu</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-lock text-muted"></i>
+                                        </span>
+                                        <input type="password" name="confirm_password" id="confirm_password" class="form-control border-start-0 border-end-0 ps-0" placeholder="••••••••" required />
+                                        <span class="input-group-text bg-light border-start-0 cursor-pointer" onclick="togglePassword('confirm_password', 'toggleIcon2')">
+                                            <i class="fas fa-eye text-muted" id="toggleIcon2"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label text-muted small" for="terms">
+                                        Tôi đồng ý với <a href="#" class="text-decoration-none">Điều khoản dịch vụ</a> và <a href="#" class="text-decoration-none">Chính sách bảo mật</a>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-gradient text-white w-100 py-3 fw-semibold rounded-3 mb-3">
+                                    <i class="fas fa-user-plus me-2"></i>Đăng ký ngay
+                                </button>
+                            </form>
+
+                            <div class="position-relative my-4">
+                                <hr class="text-muted" />
+                                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">Hoặc đăng ký với</span>
+                            </div>
+
+                            <div class="row g-2 mb-4">
+                                <div class="col-6">
+                                    <button class="btn btn-outline-secondary w-100 py-2">
+                                        <i class="fab fa-facebook-f text-primary me-2"></i>Facebook
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-secondary w-100 py-2">
+                                        <i class="fab fa-google text-danger me-2"></i>Google
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p class="text-center text-muted mb-0">
+                                Đã có tài khoản? 
+                                <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">Đăng nhập</a>
+                            </p>
+                        </div>
+
+                        <!-- Left Side -->
+                        <div class="col-lg-5 order-1 order-lg-2 d-none d-lg-flex register-left text-white p-5 flex-column justify-content-center position-relative">
+                            <div class="text-center position-relative" style="z-index: 2;">
+                                <div class="mb-4">
+                                    <i class="fas fa-users-cog fa-4x pulse-animation"></i>
+                                </div>
+                                <h2 class="fw-bold mb-3">Tham gia với chúng tôi</h2>
+                                <p class="mb-4 opacity-75">Bắt đầu quản lý chấm công hiệu quả</p>
+                                
+                                <div class="mt-5">
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
+                                        <i class="fas fa-bolt fs-4 mb-2"></i>
+                                        <p class="mb-0 small">Thiết lập nhanh chóng</p>
+                                    </div>
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 mb-3">
+                                        <i class="fas fa-mobile-alt fs-4 mb-2"></i>
+                                        <p class="mb-0 small">Sử dụng mọi lúc mọi nơi</p>
+                                    </div>
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-3">
+                                        <i class="fas fa-headset fs-4 mb-2"></i>
+                                        <p class="mb-0 small">Hỗ trợ 24/7</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="position-absolute bg-white bg-opacity-10 rounded-circle" style="width: 250px; height: 250px; top: -100px; right: -100px;"></div>
+                            <div class="position-absolute bg-white bg-opacity-10 rounded-circle" style="width: 200px; height: 200px; bottom: -80px; left: -80px;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="login-right">
-              <div class="login-right-wrap">
-                <h1>Register</h1>
-                <p class="account-subtitle">Access to our dashboard</p>
-
-                <!-- Error and success messages -->
-                {% if messages %}
-                <div class="alert alert-info">
-                  {% for message in messages %}
-                  <p>{{ message }}</p>
-                  {% endfor %}
-                </div>
-                {% endif %}
-
-                <!-- Registration Form -->
-                <form method="POST" action="{% url 'signup' %}">
-                  {% csrf_token %}
-                  <div class="form-group">
-                    <input
-                      class="form-control"
-                      type="text"
-                      name="first_name"
-                      placeholder="First Name"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <input
-                      class="form-control"
-                      type="text"
-                      name="last_name"
-                      placeholder="Last Name"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <input
-                      class="form-control"
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <input
-                      class="form-control"
-                      type="password"
-                      name="password"
-                      placeholder="Password"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <input
-                      class="form-control"
-                      type="password"
-                      name="confirm_password"
-                      placeholder="Confirm Password"
-                      required
-                    />
-                  </div>
-                  <div class="form-group mb-0">
-                    <button class="btn btn-primary btn-block" type="submit">
-                      Register
-                    </button>
-                  </div>
-                </form>
-
-                <div class="login-or">
-                  <span class="or-line"></span>
-                  <span class="span-or">or</span>
-                </div>
-
-                <div class="social-login">
-                  <span>Register with</span>
-                  <a href="#" class="facebook"
-                    ><i class="fab fa-facebook-f"></i
-                  ></a>
-                  <a href="#" class="google"><i class="fab fa-google"></i></a>
-                </div>
-
-                <div class="text-center dont-have">
-                  Already have an account?
-                  <a href="{% url 'login' %}">Login</a>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
 
-    <!-- jQuery -->
     <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
-    <!-- Bootstrap Core JS -->
     <script src="{% static 'assets/js/popper.min.js' %}"></script>
     <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
-    <!-- Custom JS -->
-    <script src="{% static 'assets/js/script.js' %}"></script>
-  </body>
+    
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
 </html>

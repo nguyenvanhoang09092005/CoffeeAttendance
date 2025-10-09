@@ -1,84 +1,140 @@
-{% extends 'Home/base.html' %}
-{% load static %}
-{% block body %}
-
+{% extends 'Home/base.html' %} {% load static %} {% block body %}
 <div class="page-wrapper">
   <div class="content container-fluid">
-    <!-- Page Header -->
     <div class="page-header">
       <div class="row align-items-center">
         <div class="col">
-          <h3 class="page-title">
-            <i class="fas fa-money-check-alt text-danger mr-2"></i>
-            Xóa bảng lương
-          </h3>
+          <h3 class="page-title">Nhân viên</h3>
           <ul class="breadcrumb">
             <li class="breadcrumb-item">
               <a href="{% url 'admin_dashboard' %}">Dashboard</a>
             </li>
-            <li class="breadcrumb-item">
-              <a href="{% url 'finance:payroll_list' %}">Bảng lương</a>
-            </li>
-            <li class="breadcrumb-item active text-danger">Xóa</li>
+            <li class="breadcrumb-item active">Nhân viên</li>
           </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+          <a href="#" class="btn btn-outline-primary mr-2"
+            ><i class="fas fa-download"></i> Download</a
+          >
+          <a href="{% url 'add_employee' %}" class="btn btn-primary"
+            ><i class="fas fa-plus"></i
+          ></a>
         </div>
       </div>
     </div>
 
-    <!-- Card nội dung -->
-    <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
+    <div class="row">
+      <div class="col-sm-12">
         <div class="card card-table">
-          <div class="card-body text-center py-5">
-            <div class="mb-4">
-              <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
-            </div>
-
-            <h4 class="mb-3">Xác nhận xóa bảng lương</h4>
-            <p class="text-muted">
-              Bạn có chắc chắn muốn xóa bảng lương này không?
-              <br />
-              <strong class="text-danger">Hành động này không thể hoàn tác.</strong>
-            </p>
-
-            <!-- Thông tin chi tiết -->
-            <div class="table-responsive mt-4">
-              <table class="table table-bordered mb-0">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover table-center mb-0 datatable">
+                <thead>
+                  <tr>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Ảnh</th>
+                    <th class="text-center">Họ&Tên</th>
+                    <th class="text-center">Giới tính</th>
+                    <th class="text-center">SĐT</th>
+                    <th class="text-center">Chức vụ</th>
+                    <th class="text-center">Ngày sinh</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Địa chỉ</th>
+                    <th class="text-center">Hành động</th>
+                  </tr>
+                </thead>
                 <tbody>
+                  {% for employee in employee_list %}
                   <tr>
-                    <th class="text-right" style="width: 40%;">Nhân viên:</th>
-                    <td class="text-left">
-                      {{ payroll.employee.first_name }} {{ payroll.employee.last_name }}
+                    <td class="text-center">{{ employee.employee_id }}</td>
+                    <td class="text-center">
+                      <a
+                        href="{% url 'view_employee' employee.slug %}"
+                        class="avatar avatar-sm"
+                      >
+                        {% if employee.employee_image %}
+                        <img
+                          class="avatar-img rounded-circle"
+                          src="{{ employee.employee_image.url }}"
+                          alt="User Image"
+                        />
+                        {% else %}
+                        <img
+                          class="avatar-img rounded-circle"
+                          src="{% static 'assets/img/default-avatar.png' %}"
+                          alt="User Image"
+                        />
+                        {% endif %}
+                      </a>
+                    </td>
+                    <td class="text-center">
+                      <a
+                        href="{% url 'view_employee' employee.slug %}"
+                        style="color: inherit; text-decoration: none"
+                      >
+                        {{ employee.first_name }} {{ employee.last_name }}
+                      </a>
+                    </td>
+
+                    <td class="text-center">
+                      {{ employee.get_gender_display }}
+                    </td>
+                    <td class="text-center">{{ employee.mobile_number }}</td>
+                    <td class="text-center">
+                      {{ employee.get_position_display }}
+                    </td>
+                    <td class="text-center">
+                      {{ employee.date_of_birth|date:"d/m/Y" }}
+                    </td>
+                    <td class="text-center">
+                      {{ employee.get_employment_status_display }}
+                    </td>
+                    <td
+                      class="text-center"
+                      style="
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                      "
+                    >
+                      {{ employee.address|default:"-" }}
+                    </td>
+                    <td class="text-center">
+                      <div class="actions">
+                          <!-- Đăng ký khuôn mặt -->
+    <a href="{% url 'register_face' employee.id %}" 
+       class="btn btn-sm bg-warning-light mr-2" 
+       title="Đăng ký khuôn mặt">
+      <i class="fas fa-user-check"></i>
+    </a>
+                        <a
+                          href="{% url 'edit_employee' employee.slug %}"
+                          class="btn btn-sm bg-success-light mr-2"
+                        >
+                          <i class="fas fa-pen"></i>
+                        </a>
+                        <form
+                          action="{% url 'delete_employee' employee.slug %}"
+                          method="POST"
+                          style="display: inline"
+                        >
+                          {% csrf_token %}
+                          <button
+                            type="submit"
+                            class="btn btn-sm bg-danger-light"
+                            onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
-                  <tr>
-                    <th class="text-right">Kỳ:</th>
-                    <td class="text-left">
-                      {{ payroll.start_date|date:"d/m/Y" }} - {{ payroll.end_date|date:"d/m/Y" }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th class="text-right">Lương thực nhận:</th>
-                    <td class="text-left text-primary font-weight-bold">
-                      {{ payroll.net_salary|floatformat:0 }} VND
-                    </td>
-                  </tr>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
-
-            <!-- Nút xác nhận -->
-            <form method="post" class="mt-4">
-              {% csrf_token %}
-              <div class="d-flex justify-content-center">
-                <a href="{% url 'finance:payroll_list' %}" class="btn btn-secondary mr-3">
-                  <i class="fas fa-times"></i> Hủy
-                </a>
-                <button type="submit" class="btn btn-danger">
-                  <i class="fas fa-trash-alt"></i> Xác nhận xóa
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       </div>
@@ -90,12 +146,10 @@
   </footer>
 </div>
 
-<!-- Scripts -->
 <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'assets/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables/datatables.min.js' %}"></script>
 <script src="{% static 'assets/js/script.js' %}"></script>
-
 {% endblock %}

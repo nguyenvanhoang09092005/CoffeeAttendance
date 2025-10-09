@@ -3,25 +3,35 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.db.models import Sum
 from django.utils import timezone
-from .models import ExpenseCategory, Expense, Revenue, PayrollSummary, PayrollDetail
+from .models import (
+    ExpenseCategory, Expense, RevenueExpense, Revenue, 
+    PayrollSummary, PayrollDetail
+)
 
 
 # ======= 1. LOẠI CHI PHÍ =======
 @admin.register(ExpenseCategory)
 class ExpenseCategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "description", "is_active", "total_expenses")
+    list_display = ("name", "description", "is_active", "total_standalone_expenses", "total_revenue_expenses")
     list_filter = ("is_active",)
     search_fields = ("name", "description")
     ordering = ("name",)
     
-    def total_expenses(self, obj):
-        """Hiển thị tổng số chi phí thuộc loại này"""
-        total = obj.expenses.filter(status='approved').aggregate(Sum('amount'))['amount__sum'] or 0
-        return format_html('<strong>{:,.0f} VND</strong>', total)
-    total_expenses.short_description = "Tổng chi (đã duyệt)"
+    def total_standalone_expenses(self, obj):
+        """Tổng chi phí độc lập"""
+        total = obj.standalone_expenses.filter(status='approved').aggregate(
+            Sum('amount'))['amount__sum'] or 0
+        return format_html('<strong style="color: #dc3545;">{:,.0f} VND</strong>', total)
+    total_standalone_expenses.short_description = "Chi phí độc lập (đã duyệt)"
+    
+    def total_revenue_expenses(self, obj):
+        """Tổng chi phí liên kết doanh thu"""
+        total = obj.revenue_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+        return format_html('<strong style="color: #fd7e14;">{:,.0f} VND</strong>', total)
+    total_revenue_expenses.short_description = "Chi từ doanh thu"
 
 
-# ======= 2. CHI PHÍ =======
+# ======= 2A. CHI PHÍ ĐỘC LẬP =======
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (
@@ -57,17 +67,14 @@ class ExpenseAdmin(admin.ModelAdmin):
     )
     
     def description_short(self, obj):
-        """Hiển thị mô tả ngắn gọn"""
         return obj.description[:50] + "..." if len(obj.description) > 50 else obj.description
     description_short.short_description = "Mô tả"
     
     def amount_display(self, obj):
-        """Hiển thị số tiền với định dạng"""
         return format_html('<strong style="color: #dc3545;">{:,.0f} VND</strong>', obj.amount)
     amount_display.short_description = "Số tiền"
     
     def status_badge(self, obj):
-        """Hiển thị trạng thái với màu sắc"""
         colors = {
             'pending': '#ffc107',
             'approved': '#28a745',
@@ -86,7 +93,6 @@ class ExpenseAdmin(admin.ModelAdmin):
     status_badge.short_description = "Trạng thái"
     
     def receipt_preview(self, obj):
-        """Hiển thị preview hình ảnh hóa đơn"""
         if obj.receipt_image:
             return format_html(
                 '<a href="{}" target="_blank"><img src="{}" style="max-width: 200px; max-height: 200px;" /></a>',
@@ -99,55 +105,55 @@ class ExpenseAdmin(admin.ModelAdmin):
     actions = ['approve_expenses', 'reject_expenses']
     
     def approve_expenses(self, request, queryset):
-        """Action phê duyệt nhiều chi phí"""
-        # Kiểm tra xem user có employee_profile không
-        try:
-            approved_by = request.user.employee_profile
-        except:
-            approved_by = None
-        
-        updated = queryset.update(status='approved', approved_by=approved_by)
+        updated = queryset.update(status='approved', approved_by=request.user)
         self.message_user(request, f"Đã phê duyệt {updated} chi phí")
     approve_expenses.short_description = "✅ Phê duyệt các chi phí đã chọn"
     
     def reject_expenses(self, request, queryset):
-        """Action từ chối nhiều chi phí"""
-        try:
-            approved_by = request.user.employee_profile
-        except:
-            approved_by = None
-            
-        updated = queryset.update(status='rejected', approved_by=approved_by)
+        updated = queryset.update(status='rejected', approved_by=request.user)
         self.message_user(request, f"Đã từ chối {updated} chi phí")
     reject_expenses.short_description = "❌ Từ chối các chi phí đã chọn"
 
 
-# ======= 3. DOANH THU =======
-@admin.register(Revenue)
-class RevenueAdmin(admin.ModelAdmin):
+# ======= 2B. CHI PHÍ LIÊN KẾT DOANH THU =======
+class RevenueExpenseInline(admin.TabularInline):
+    model = RevenueExpense
+    extra = 1
+    fields = ("category", "description", "amount", "note")
+    readonly_fields = ("expense_date", "created_by")
+    can_delete = True
+
+
+@admin.register(RevenueExpense)
+class RevenueExpenseAdmin(admin.ModelAdmin):
     list_display = (
-        "revenue_date",
-        "source",
-        "category_display",
+        "expense_date",
+        "revenue_info",
+        "category",
+        "description_short",
         "amount_display",
         "created_by"
     )
-    list_filter = ("category", "revenue_date", "created_at")
-    search_fields = ("source", "description", "note")
-    date_hierarchy = "revenue_date"
-    ordering = ("-revenue_date", "-created_at")
+    list_filter = ("category", "expense_date", "created_at")
+    search_fields = ("description", "note", "revenue__shift")
+    date_hierarchy = "expense_date"
+    ordering = ("-expense_date", "-created_at")
     
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("expense_date", "receipt_image", "created_by", "created_at", "updated_at")
     
     fieldsets = (
-        ("Thông tin doanh thu", {
-            "fields": ("source", "category", "amount", "revenue_date")
+        ("Liên kết", {
+            "fields": ("revenue",)
         }),
-        ("Mô tả & Ghi chú", {
-            "fields": ("description", "note")
+        ("Thông tin chi phí", {
+            "fields": ("category", "description", "amount")
         }),
-        ("Người ghi nhận", {
-            "fields": ("created_by",)
+        ("Tự động từ Revenue", {
+            "fields": ("expense_date", "receipt_image", "created_by"),
+            "classes": ("collapse",)
+        }),
+        ("Ghi chú", {
+            "fields": ("note",)
         }),
         ("Thời gian", {
             "fields": ("created_at", "updated_at"),
@@ -155,24 +161,123 @@ class RevenueAdmin(admin.ModelAdmin):
         }),
     )
     
-    def category_display(self, obj):
-        """Hiển thị loại doanh thu"""
-        colors = {
-            'sales': '#007bff',
-            'service': '#17a2b8',
-            'other': '#6c757d',
-        }
+    def revenue_info(self, obj):
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">{}</span>',
-            colors.get(obj.category, '#6c757d'),
-            obj.get_category_display()
+            '<strong>{}</strong> - {}',
+            obj.revenue.get_shift_display(),
+            obj.revenue.revenue_date.strftime('%d/%m/%Y')
         )
-    category_display.short_description = "Loại"
+    revenue_info.short_description = "Phiếu doanh thu"
+    
+    def description_short(self, obj):
+        return obj.description[:40] + "..." if len(obj.description) > 40 else obj.description
+    description_short.short_description = "Mô tả"
     
     def amount_display(self, obj):
-        """Hiển thị số tiền với định dạng"""
-        return format_html('<strong style="color: #28a745;">{:,.0f} VND</strong>', obj.amount)
+        return format_html('<strong style="color: #fd7e14;">{:,.0f} VND</strong>', obj.amount)
     amount_display.short_description = "Số tiền"
+
+
+# ======= 3. DOANH THU =======
+@admin.register(Revenue)
+class RevenueAdmin(admin.ModelAdmin):
+    list_display = (
+        "revenue_date",
+        "shift_display",
+        "tien_mat_display",
+        "chuyen_khoan_display",
+        "vnpay_display",
+        "no_display",
+        "chi_display",
+        "tong_display",
+        "danh_thu_rong_display",
+        "created_by"
+    )
+    list_filter = ("shift", "revenue_date", "created_at")
+    search_fields = ("note", "created_by__username")
+    date_hierarchy = "revenue_date"
+    ordering = ("-revenue_date", "-created_at")
+    
+    readonly_fields = ("tong", "danh_thu_rong", "chi", "created_at", "updated_at", "receipt_preview")
+    
+    fieldsets = (
+        ("Thông tin ca", {
+            "fields": ("revenue_date", "shift", "created_by")
+        }),
+        ("Doanh thu", {
+            "fields": ("tien_mat", "chuyen_khoan", "vnpay", "no")
+        }),
+        ("Tổng hợp (tự động)", {
+            "fields": ("chi", "tong", "danh_thu_rong"),
+            "classes": ("collapse",)
+        }),
+        ("Chứng từ & Ghi chú", {
+            "fields": ("receipt_image", "receipt_preview", "note")
+        }),
+        ("Thời gian", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+    
+    inlines = [RevenueExpenseInline]
+    
+    def shift_display(self, obj):
+        colors = {
+            'sang': '#17a2b8',
+            'chieu': '#ffc107',
+            'toi': '#6c757d',
+        }
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>',
+            colors.get(obj.shift, '#6c757d'),
+            obj.get_shift_display()
+        )
+    shift_display.short_description = "Ca"
+    
+    def tien_mat_display(self, obj):
+        color = "#dc3545" if obj.tien_mat < 0 else "#28a745"
+        return format_html('<span style="color: {};">{:,.0f}</span>', color, obj.tien_mat)
+    tien_mat_display.short_description = "Tiền mặt"
+    
+    def chuyen_khoan_display(self, obj):
+        return format_html('{:,.0f}', obj.chuyen_khoan)
+    chuyen_khoan_display.short_description = "CK"
+    
+    def vnpay_display(self, obj):
+        return format_html('{:,.0f}', obj.vnpay)
+    vnpay_display.short_description = "VNPay"
+    
+    def no_display(self, obj):
+        return format_html('{:,.0f}', obj.no)
+    no_display.short_description = "Nợ"
+    
+    def chi_display(self, obj):
+        return format_html('<strong style="color: #dc3545;">{:,.0f}</strong>', obj.chi)
+    chi_display.short_description = "Chi"
+    
+    def tong_display(self, obj):
+        return format_html('<strong>{:,.0f}</strong>', obj.tong)
+    tong_display.short_description = "Tổng"
+    
+    def danh_thu_rong_display(self, obj):
+        color = "#28a745" if obj.danh_thu_rong >= 0 else "#dc3545"
+        return format_html(
+            '<strong style="color: {}; font-size: 14px;">{:,.0f} VND</strong>', 
+            color, 
+            obj.danh_thu_rong
+        )
+    danh_thu_rong_display.short_description = "Danh thu ròng"
+    
+    def receipt_preview(self, obj):
+        if obj.receipt_image:
+            return format_html(
+                '<a href="{}" target="_blank"><img src="{}" style="max-width: 200px; max-height: 200px;" /></a>',
+                obj.receipt_image.url,
+                obj.receipt_image.url
+            )
+        return "Chưa có hình ảnh"
+    receipt_preview.short_description = "Xem trước chứng từ"
 
 
 # ======= 4. CHI TIẾT BẢNG LƯƠNG (Inline) =======
@@ -244,12 +349,10 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     actions = ['generate_payroll_details', 'calculate_salaries', 'approve_payrolls']
     
     def payroll_id_short(self, obj):
-        """Hiển thị mã bảng lương ngắn gọn"""
         return format_html('<code>{}</code>', str(obj.payroll_id)[:8])
     payroll_id_short.short_description = "Mã BL"
     
     def employee_info(self, obj):
-        """Hiển thị thông tin nhân viên"""
         url = reverse("admin:employee_employee_change", args=[obj.employee.pk])
         return format_html(
             '<a href="{}" target="_blank"><strong>{}</strong></a><br/><small style="color: #6c757d;">{}</small>',
@@ -260,7 +363,6 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     employee_info.short_description = "Nhân viên"
     
     def period_display(self, obj):
-        """Hiển thị kỳ lương"""
         return format_html(
             '{}<br/><small style="color: #6c757d;">đến</small><br/>{}',
             obj.start_date.strftime('%d/%m/%Y'),
@@ -269,7 +371,6 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     period_display.short_description = "Kỳ lương"
     
     def total_hours_display(self, obj):
-        """Hiển thị tổng giờ với chi tiết"""
         details_count = obj.payroll_details.count()
         return format_html(
             '<strong>{} giờ</strong> <small style="color: #6c757d;">({} ngày)</small>',
@@ -279,12 +380,10 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     total_hours_display.short_description = "Chi tiết giờ"
     
     def net_salary_display(self, obj):
-        """Hiển thị lương thực nhận"""
         return format_html('<strong style="color: #28a745; font-size: 14px;">{:,.0f} VND</strong>', obj.net_salary)
     net_salary_display.short_description = "Lương thực nhận"
     
     def status_badge(self, obj):
-        """Hiển thị trạng thái với màu sắc"""
         colors = {
             'draft': '#6c757d',
             'pending': '#ffc107',
@@ -307,7 +406,6 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     status_badge.short_description = "Trạng thái"
     
     def generate_payroll_details(self, request, queryset):
-        """Action tự động sinh chi tiết từ chấm công"""
         count = 0
         for payroll in queryset:
             payroll.generate_details_from_attendance()
@@ -316,7 +414,6 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     generate_payroll_details.short_description = "🔄 Tạo chi tiết từ chấm công"
     
     def calculate_salaries(self, request, queryset):
-        """Action tính toán lương"""
         count = 0
         for payroll in queryset:
             payroll.calculate_salary()
@@ -325,15 +422,9 @@ class PayrollSummaryAdmin(admin.ModelAdmin):
     calculate_salaries.short_description = "🧮 Tính toán lương"
     
     def approve_payrolls(self, request, queryset):
-        """Action phê duyệt bảng lương"""
-        try:
-            approved_by = request.user.employee_profile
-        except:
-            approved_by = None
-        
         for payroll in queryset:
             payroll.status = 'approved'
-            payroll.approved_by = approved_by
+            payroll.approved_by = request.user
             payroll.approved_at = timezone.now()
             payroll.save()
         
@@ -376,12 +467,10 @@ class PayrollDetailAdmin(admin.ModelAdmin):
     )
     
     def employee_name(self, obj):
-        """Hiển thị tên nhân viên"""
         return f"{obj.payroll_summary.employee.first_name} {obj.payroll_summary.employee.last_name}"
     employee_name.short_description = "Nhân viên"
     
     def status_display(self, obj):
-        """Hiển thị trạng thái chi tiết"""
         if obj.status == 'V':
             return format_html('<span style="color: #dc3545;">❌ Vắng</span>')
         elif obj.status == 'T':

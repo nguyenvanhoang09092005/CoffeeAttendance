@@ -8,6 +8,9 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 
 
+# ==============================
+# ĐĂNG KÝ TÀI KHOẢN
+# ==============================
 def signup_view(request):
     if request.method == 'POST':
         first_name = request.POST['first_name']
@@ -15,8 +18,8 @@ def signup_view(request):
         email = request.POST['email']
         password = request.POST['password']
         role = request.POST.get('role')  
-        
-        # Create the user
+
+        # Tạo người dùng mới
         user = CustomUser.objects.create_user(
             username=email,
             email=email,
@@ -24,8 +27,8 @@ def signup_view(request):
             last_name=last_name,
             password=password,
         )
-        
-        # Assign the appropriate role
+
+        # Gán vai trò
         if role == 'employee':
             user.is_employee = True
         elif role == 'manager':
@@ -33,71 +36,84 @@ def signup_view(request):
         elif role == 'admin':
             user.is_admin = True
 
-        user.save()  # Save the user with the assigned role
+        user.save()
         login(request, user)
-        messages.success(request, 'Signup successful!')
-        return redirect('index')  # Redirect to the index or home page
-    return render(request, 'authentication/register.html')  # Render signup template
+        messages.success(request, 'Đăng ký tài khoản thành công!')
+        return redirect('index')
+
+    return render(request, 'authentication/register.html')
 
 
+# ==============================
+# ĐĂNG NHẬP
+# ==============================
 def login_view(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
-        
+
         user = authenticate(request, username=email, password=password)
         if user is not None:
             login(request, user)
-            messages.success(request, 'Login successful!')
-            
-            # Redirect user based on their role
-            if user.is_admin or user.is_manager:   # admin + manager cùng 1 dashboard
+            messages.success(request, 'Đăng nhập thành công!')
+
+            # Điều hướng theo vai trò
+            if user.is_admin or user.is_manager:  # admin + manager cùng dashboard
                 return redirect('admin_dashboard')
             elif user.is_employee:
                 return redirect('staff_dashboard')
             else:
-                messages.error(request, 'Invalid user role')
-                return redirect('index') 
-            
+                messages.error(request, 'Không xác định được vai trò của người dùng.')
+                return redirect('index')
         else:
-            messages.error(request, 'Invalid credentials')
-    return render(request, 'authentication/login.html')  # Render login template
+            messages.error(request, 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.')
+
+    return render(request, 'authentication/login.html')
 
 
+# ==============================
+# QUÊN MẬT KHẨU
+# ==============================
 def forgot_password_view(request):
     if request.method == 'POST':
         email = request.POST['email']
         user = CustomUser.objects.filter(email=email).first()
-        
+
         if user:
             token = get_random_string(32)
             reset_request = PasswordResetRequest.objects.create(user=user, email=email, token=token)
             reset_request.send_reset_email()
-            messages.success(request, 'Reset link sent to your email.')
+            messages.success(request, 'Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.')
         else:
-            messages.error(request, 'Email not found.')
-    
-    return render(request, 'authentication/forgot-password.html')  # Render forgot password template
+            messages.error(request, 'Không tìm thấy tài khoản với email này.')
+
+    return render(request, 'authentication/forgot-password.html')
 
 
+# ==============================
+# ĐẶT LẠI MẬT KHẨU
+# ==============================
 def reset_password_view(request, token):
     reset_request = PasswordResetRequest.objects.filter(token=token).first()
-    
+
     if not reset_request or not reset_request.is_valid():
-        messages.error(request, 'Invalid or expired reset link')
+        messages.error(request, 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.')
         return redirect('index')
 
     if request.method == 'POST':
         new_password = request.POST['new_password']
         reset_request.user.set_password(new_password)
         reset_request.user.save()
-        messages.success(request, 'Password reset successful')
+        messages.success(request, 'Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay bây giờ.')
         return redirect('login')
 
-    return render(request, 'authentication/reset_password.html', {'token': token})  # Render reset password template
+    return render(request, 'authentication/reset_password.html', {'token': token})
 
 
+# ==============================
+# ĐĂNG XUẤT
+# ==============================
 def logout_view(request):
     logout(request)
-    messages.success(request, 'You have been logged out.')
+    messages.success(request, 'Bạn đã đăng xuất khỏi hệ thống.')
     return redirect('index')

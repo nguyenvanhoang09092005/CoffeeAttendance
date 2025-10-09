@@ -1,4 +1,31 @@
-{% extends 'Home/base.html' %} {% load static %} {% block body %}
+{% extends 'Home/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block body %}
+
+<style>
+  .info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .amount-large {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  .expense-item {
+    border-left: 3px solid #dc3545;
+    padding-left: 15px;
+    margin-bottom: 10px;
+    background: #fff5f5;
+    padding: 10px;
+    border-radius: 5px;
+  }
+</style>
+
 <div class="page-wrapper">
   <div class="content container-fluid">
     <!-- Page Header -->
@@ -17,10 +44,8 @@
           </ul>
         </div>
         <div class="col-auto text-right float-right ml-auto">
-          <a
-            href="{% url 'finance:revenue_update' revenue.pk %}"
-            class="btn btn-warning mr-2"
-          >
+        
+          <a href="{% url 'finance:revenue_update' revenue.pk %}" class="btn btn-warning mr-2">
             <i class="fas fa-pen"></i> Sửa
           </a>
           <a href="{% url 'finance:revenue_list' %}" class="btn btn-secondary">
@@ -32,105 +57,214 @@
 
     <!-- Content -->
     <div class="row">
-      <div class="col-md-8 offset-md-2">
+      <!-- Thông tin doanh thu -->
+      <div class="col-md-8">
         <div class="card">
-          <div class="card-header">
-            <h4 class="card-title mb-0">Thông tin doanh thu</h4>
+          <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+              <i class="fas fa-coins"></i> Thông tin doanh thu
+            </h4>
           </div>
           <div class="card-body">
             <div class="row">
-              <!-- Nguồn thu -->
+              <!-- Ngày & Ca -->
               <div class="col-md-6">
                 <div class="form-group">
-                  <label class="text-muted">Nguồn thu</label>
-                  <p><strong>{{ revenue.source }}</strong></p>
+                  <label class="text-muted"><i class="fas fa-calendar"></i> Ngày</label>
+                  <p><strong>{{ revenue.revenue_date|date:"d/m/Y" }}</strong></p>
                 </div>
               </div>
 
-              <!-- Loại doanh thu -->
               <div class="col-md-6">
                 <div class="form-group">
-                  <label class="text-muted">Loại doanh thu</label>
+                  <label class="text-muted"><i class="fas fa-clock"></i> Ca</label>
                   <p>
-                    {% if revenue.category == 'sales' %}
-                    <span class="badge badge-primary">Bán hàng</span>
-                    {% elif revenue.category == 'service' %}
-                    <span class="badge badge-info">Dịch vụ</span>
+                    {% if revenue.shift == 'sang' %}
+                    <span class="badge badge-info">Sáng</span>
+                    {% elif revenue.shift == 'chieu' %}
+                    <span class="badge badge-warning">Chiều</span>
                     {% else %}
-                    <span class="badge badge-secondary">Khác</span>
+                    <span class="badge badge-dark">Tối</span>
                     {% endif %}
                   </p>
                 </div>
               </div>
 
-              <!-- Số tiền -->
-              <div class="col-md-12">
-                <div class="form-group">
-                  <label class="text-muted">Số tiền</label>
-                  <p>
-                    <strong class="text-success" style="font-size: 2rem"
-                      >{{ revenue.amount|floatformat:0 }} VND</strong
-                    >
+              <!-- Các khoản thu -->
+              <div class="col-12"><hr></div>
+              <div class="col-12"><h5>Các khoản thu</h5></div>
+
+              <div class="col-md-6">
+                <div class="info-box">
+                  <label class="text-muted">Tiền mặt</label>
+                  <p class="{% if revenue.tien_mat < 0 %}text-danger{% else %}text-success{% endif %} font-weight-bold">
+                    {{ revenue.tien_mat|floatformat:0|intcomma }} VND
                   </p>
                 </div>
               </div>
 
-              <!-- Mô tả -->
-              {% if revenue.description %}
-              <div class="col-md-12">
+              <div class="col-md-6">
+                <div class="info-box">
+                  <label class="text-muted">Chuyển khoản</label>
+                  <p class="text-success font-weight-bold">{{ revenue.chuyen_khoan|floatformat:0|intcomma }} VND</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="info-box">
+                  <label class="text-muted">VNPay</label>
+                  <p class="text-success font-weight-bold">{{ revenue.vnpay|floatformat:0|intcomma }} VND</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="info-box">
+                  <label class="text-muted">Nợ</label>
+                  <p class="text-warning font-weight-bold">{{ revenue.no|floatformat:0|intcomma }} VND</p>
+                </div>
+              </div>
+
+              <!-- Tổng hợp -->
+              <div class="col-12"><hr></div>
+              
+              <div class="col-md-4">
+                <div class="alert alert-primary">
+                  <label class="text-muted">Tổng thu</label>
+                  <p class="amount-large text-primary mb-0">{{ revenue.tong|floatformat:0|intcomma }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="alert alert-danger">
+                  <label class="text-muted">Tổng chi</label>
+                  <p class="amount-large text-danger mb-0">{{ revenue.chi|floatformat:0|intcomma }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="alert alert-success">
+                  <label class="text-muted">Danh thu ròng</label>
+                  <p class="amount-large {% if revenue.danh_thu_rong < 0 %}text-danger{% else %}text-success{% endif %} mb-0">
+                    {{ revenue.danh_thu_rong|floatformat:0|intcomma }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Chứng từ -->
+              {% if revenue.receipt_image %}
+              <div class="col-12">
                 <div class="form-group">
-                  <label class="text-muted">Mô tả</label>
-                  <p>{{ revenue.description }}</p>
+                  <label class="text-muted"><i class="fas fa-image"></i> Hình ảnh chứng từ</label>
+                  <div>
+                    <a href="{{ revenue.receipt_image.url }}" target="_blank">
+                      <img src="{{ revenue.receipt_image.url }}" alt="Chứng từ" class="img-thumbnail" style="max-width: 300px;">
+                    </a>
+                  </div>
                 </div>
               </div>
               {% endif %}
 
-              <!-- Ngày thu -->
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="text-muted">Ngày thu</label>
-                  <p>{{ revenue.revenue_date|date:"d/m/Y" }}</p>
-                </div>
-              </div>
-
-              <!-- Người ghi nhận -->
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label class="text-muted">Người ghi nhận</label>
-                  <p>
-                    {% if revenue.created_by %} {{ revenue.created_by.first_name
-                    }} {{ revenue.created_by.last_name }} {% else %}
-                    <span class="text-muted">-</span>
-                    {% endif %}
-                  </p>
-                </div>
-              </div>
-
               <!-- Ghi chú -->
               {% if revenue.note %}
-              <div class="col-md-12">
+              <div class="col-12">
                 <div class="form-group">
-                  <label class="text-muted">Ghi chú</label>
+                  <label class="text-muted"><i class="fas fa-sticky-note"></i> Ghi chú</label>
                   <p>{{ revenue.note }}</p>
                 </div>
               </div>
               {% endif %}
 
-              <!-- Thời gian -->
-              <div class="col-md-6">
+              <!-- Người nhập & thời gian -->
+              <div class="col-12"><hr></div>
+              
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="text-muted">Người nhập</label>
+                  <p>
+                    {% if revenue.created_by %}
+                      {% if revenue.created_by.first_name or revenue.created_by.last_name %}
+                        {{ revenue.created_by.first_name }} {{ revenue.created_by.last_name }}
+                      {% else %}
+                        {{ revenue.created_by.username }}
+                      {% endif %}
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-4">
                 <div class="form-group">
                   <label class="text-muted">Ngày tạo</label>
                   <p>{{ revenue.created_at|date:"d/m/Y H:i" }}</p>
                 </div>
               </div>
 
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="form-group">
                   <label class="text-muted">Cập nhật lần cuối</label>
                   <p>{{ revenue.updated_at|date:"d/m/Y H:i" }}</p>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách chi phí -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header bg-danger text-white">
+            <h4 class="card-title mb-0">
+              <i class="fas fa-money-bill-wave"></i> Chi phí của ca này
+            </h4>
+          </div>
+          <div class="card-body">
+            {% if expenses %}
+              {% for expense in expenses %}
+              <div class="expense-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{{ expense.category.name|default:"Khác" }}</strong>
+                    <p class="mb-1 small text-muted">{{ expense.description }}</p>
+                    <p class="mb-0 text-danger font-weight-bold">
+                      {{ expense.amount|floatformat:0|intcomma }} VND
+                    </p>
+                  </div>
+                  <div class="btn-group-vertical">
+                    <a href="{% url 'finance:revenue_expense_update' expense.pk %}" 
+                       class="btn btn-sm btn-warning" title="Sửa">
+                      <i class="fas fa-pen"></i>
+                    </a>
+                    <a href="{% url 'finance:revenue_expense_delete' expense.pk %}" 
+                       class="btn btn-sm btn-danger mt-1" 
+                       onclick="return confirm('Xóa chi phí này?');" title="Xóa">
+                      <i class="fas fa-trash"></i>
+                    </a>
+                  </div>
+                </div>
+                {% if expense.note %}
+                <p class="mb-0 mt-2 small"><em>{{ expense.note }}</em></p>
+                {% endif %}
+              </div>
+              {% endfor %}
+
+              <div class="alert alert-info mt-3">
+                <strong>Tổng chi phí:</strong>
+                <span class="float-right font-weight-bold">
+                  {{ revenue.chi|floatformat:0|intcomma }} VND
+                </span>
+              </div>
+            {% else %}
+              <div class="text-center text-muted py-4">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <p>Chưa có chi phí nào</p>
+                <a href="{% url 'finance:revenue_expense_create' revenue.pk %}" class="btn btn-sm btn-danger">
+                  <i class="fas fa-plus"></i> Thêm chi phí đầu tiên
+                </a>
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>
